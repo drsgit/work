@@ -1,0 +1,37 @@
+2 
+LCD驱动框架及实现
+    在linux内核中，显示相关的驱动称为fb（framebuffer）驱动。在RK30 以后（RK30XX、RK292X、RK31XX）的平台上，为了尽可能的复用代码，fb驱动被分为fb框架相关的部分、LCDC控制器相关的部分、LCD屏幕相关的部分、LCD电源操作相关的板级配置部分。
+
+2.1    
+fb框架相关的代码
+    
+	drivers/video/fbmem.c 	       
+	drivers/video/rockchip/rk_fb.c  		   
+	drivers/video/rockchip/rkfb_sysfs.c 		  
+	include/linux/rk_fb.h  		       
+	include/linux/rk_screen.h 			       				   
+    这部分代码实现和 fb相关的框架，不涉及具体的硬件操作，所有的LCDC(RK3066、RK292X等等）驱动共用。其中fbmem.c为linux内核原生代码，他向上提供和用户空间交互的接口（open、read、write、ioctl驱动rk_fb.c。
+    注：从RK30 以后的 fb 驱动，我们使用新的框架，不再沿用rk29 fb的代码，因 此相关的外围驱动，比如屏幕配置文件，如果要使用到rk fb 中相关的数据结构，请直接#include<linux/rk_fb.h>,不要再使用rk29_fb.h、screen.h等rk2918以前的头文件，否则有可能带来兼容性相关的问题。
+
+2.2 
+LCDC相关的代码
+
+     drivers/video/rockchip/lcdc/rkxxx_lcdc.c：
+     drivers/video/rockchip/lcdc/rk30_lcdc.c 
+     drivers/video/rockchip/lcdc/rk3066b_lcdc.c 
+     drivers/video/rockchip/lcdc/rk2928_lcdc.c 
+     drivers/video/rockchip/lcdc/rk3188_lcdc.c 
+这部分代码和具体的LCDC控制器相关，不同的LCDC控制器对应的代码不同。
+
+
+
+    如果某个项目，因为模具和硬件差错导致屏幕方向不对（错了180度或者90度），而硬件又无法纠正（一般的lcd屏幕有两个pin U/D L/R可以调整方向），可以通过软件进行旋转，先修改build.prop的ro.sf.hwrotation，把屏幕的显示方向纠正过来。这时候如果连接上HDMI，HDMI的方向也会由于ro.sf.hwrotation的改变而反掉，然后在kernel的make meuconfig里面选择FB rotatesupport选项，并且在rotate orientation里面填写ro.sf.hwrotation的值。注意，通过这样方法旋转会增加内存的开销，同时降低显示的流畅度，所以，尽可能的通过硬件调整屏幕的显示方向。
+    需要注意的是，该方法只适用于rk30xx等用两个lcdc进行双显的方案。这样修改之后，在recovery界面，LCD屏幕上还是反的，因为在recovery中ro.sf.hwrotation这个宏不起作用。为了将recovery界面选择
+180都，需要在device/rockchip/rkxxsdk/BoardConfig.mk 中打开下面的宏。BOARD_HAS_FLIPPED_SCREEN := true
+
+epd_panel->rotate = 270;
+
+然后执行下面命令,重新生成recovery.img：     
+（1）touch bootable/recovery/minui/graphics.c  
+（2） make out/target/product/rk30sdk/recovery.img  
+（3）./mkimage.sh

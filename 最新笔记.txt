@@ -1,0 +1,1076 @@
+﻿编译上层的某个模块
+. android/build/envsetup.sh(一点后面有空格) 设置环境
+lunch：选择平台编译选项(没有这个会出现 no rule...)
+mmm packages/apps/Dialer/
+
+. build/envsetup.sh
+m：编译所有的模块 
+mm：编译当前目录下的模块，当前目录下要有Android.mk文件 
+mmm：编译指定路径下的模块，指定路径下要有Android.mk文件 
+
+如果往framwork加入或修改了api
+需要在上层envsetup.sh->lunch->make update-api->编译上层
+
+adb push C:\Windows.apk /system/app  把修改过的app放入系统
+adb shell pm install -r /system/priv-app/Dialer.apk  安装apk
+
+adb shell 里getprop 能得到 属性
+
+由于谷歌与规定，标准的dpi为160，所以最终公式就推导出来了！
+dp = px / ( dpi(注：配置文件的density) / 160)
+http://blog.csdn.net/beijingshi1/article/details/10985361
+adb shell getprop ro.sf.lcd_density 查看像素密度
+
+IOVDD是I/O port supply，
+AVDD主要给ADC, DAC, reference,PLL, SAR ADC analog power supply，
+DVDD是Digital core supply。具体名称含义请看芯片的datasheet
+
+上层的临时文件通常带有 “intermediates”
+
+修改默认壁纸 看几个地方   
+android\device\softwinner\wing-common\overlay\packages\apps\Launcher2\res\drawable-nodpi覆盖
+android\device\softwinner\wing-hn-3d-portrait-common\overlay覆盖  
+android/package/app/launcher2
+android\frameworks\base\core\res\res\drawable-nodpi
+android\out\target\common\obj\JAVA_LIBRARIES\android_stubs_current_intermediates\classes\res\drawable-nodpi缓冲文件
+
+backgroud_holo_dark.jpg背景图片
+
+app/Launcher2/res/value-sw480dp/dimens.xml   app_icon_size  app图标大小 workspace_icon_text_size图标字体大小
+
+android\device\softwinner\wing-hn-3d-portrait-common/...../overlay/launcher2/..res  中的东西会覆盖 某些属性
+android\device\softwinner\wing-common/....overlay/launcher2/../res
+
+__attribute__设置属性，字节对齐 
+__FUNCTION__, __LINE__函数名 所在行号，调试打印方便排查
+
+
+Android编译选项eng、user、test、optional的区别
+http://blog.csdn.net/talking12391239/article/details/10904653
+Android.mk中有写
+device/softwinner/wing-hn-3d-portrait-common/wing-hn-3d-portrait-common.mk
+从零开始做AndroidBSP工程师
+http://blog.csdn.net/blood_defences/article/category/2290359
+休眠唤醒机制
+http://blog.csdn.net/harhy/article/details/8528275
+好资料
+http://blog.csdn.net/chenyafei617/article/details/6968136 
+Android2.2、2.3，4.x定制修改状态栏布局、背景、去除状态栏按键、添加状态栏按键  
+http://zxdsunboy.blog.163.com/blog/static/71570242201262562142210/
+增加共享分区
+http://blog.sina.com.cn/s/blog_a000da9d0101759n.html
+Android TP
+http://blog.csdn.net/bi511304183/article/details/9303241
+老罗的Android之旅爱生活，爱Android
+http://blog.csdn.net/luoshengyang/article/details/6568411
+Android系统进程Zygote启动过程的源代码分析
+http://blog.csdn.net/luoshengyang/article/details/6768304
+内核调用 用户程序 仿exec
+http://www.cnblogs.com/hoys/archive/2012/03/13/2395232.html
+mma7660移植 好文  
+http://wenku.baidu.com/link?url=YhOsveBRgPyeH9jiPlSAvZibqYAK6r9W23tOvXuyineww1YvPY76WAKjAGpACRD_s2Bh3duNz8QbIueUVndAIFSa6vqC4vazYI-oAWdDoQy
+全志csi接口Camera驱动调用学习
+http://blog.sina.com.cn/s/blog_602f87700101gtic.html
+语言时区
+http://blog.csdn.net/jancyliu/article/details/9173043  
+《深入理解Android：Wi-Fi，NFC和GPS》章节连载
+http://blog.csdn.net/innost/article/details/20292347   
+linux 下patch的制作和应用
+http://www.cnblogs.com/itech/archive/2009/08/19/1549729.html  
+从Source Insight到Vim 
+http://www.360doc.com/content/12/0523/10/7899729_213071522.shtml
+JNI_Onload
+http://blog.csdn.net/zhenyongyuan123/article/details/5862054
+查看Android.mk文件中的变量的值
+http://www.cnblogs.com/activity-life/p/3639279.html
+Android make脚本简记  Andorid.mk  变量
+http://quanminchaoren.iteye.com/blog/840918
+NDK JNI_Onload
+http://blog.csdn.net/luhuajcdd/article/details/7750146
+全志csi摄像头接口驱动a20
+http://blog.sina.com.cn/s/blog_602f87700101gtic.html
+ _IO, _IOR, _IOW, _IOWR
+http://blog.chinaunix.net/uid-20754793-id-177774.html
+
+
+串口打印
+[uart_para0] 
+uart_debug_tx            =port:PF2<4>
+uart_debug_rx            =port:PF4<4>
+
+sdc_used=0
+
+使用sd卡
+[uart_para0]
+uart_debug_tx            =port:PB22<4>
+uart_debug_rx            =port:PB23<4>
+
+sdc_used=1
+
+
+直接装setting.apk是不行的, 改上层apk的控件之类的，学会从string.xml里面找到字符串，再到res和src里找对应的，si不会在xml文件中搜索，只会在.h.c中，或者布局文件layout，尽量找简单的方法，加载两份布局文件，隐藏控件。。。尽量不要删除，改的地方加注释
+
+改之前一定要复制一份源代码的副本
+
+/android/framework/base/packages/systemui    quiksettings.java  下拉通知栏 快速设置
+/android/package/settting 设置app
+
+android/frameworks/base/core/java/android/kklibsys/kkLibSys.java   读取某些DIY配置文件的接口   与内核driver里的kk_device有关
+android/frameworks/base/jni/android_kk_libsys.cpp
+
+lichee/linux-3.4/kernel/printk.c  里面 DEFAULT_MESSAGE_LOGLEVEL 默认 打印等级
+或者只编译内核 有得选debug版本 和 普通版本
+echo "8  4    1    7" > /proc/sys/kernel/printk  重启后无效
+
+usbhostX后面有不同用处   usbhost0  是可以用的接口  usbhost1 3G  usbhost2  WIFI
+
+usbcX  也要有配置   配置 是otg接口，还是总线   WIFI 和  3G 就是挂接在usb1总线上
+
+首先是由init.rc创建文件，
+由vold.fstab进行链接，
+然后只要提供给VOLD正确的参数（或默认），
+最终再在android\overlay\frameworks\base\core\res\res\xml\storage_list.xml配置好   是overlay哦
+
+system/media/bootanimation.zip   开机多图动画    .zip后缀   zip使用的压缩方式为无损压缩（在WinRar中压缩方式选--存储）
+开机动画 /system/media/bootanimation.zip   记得把压缩包里的Thomb.db删了
+
+include\generated目录下的autoconf.h
+1. 生成是在make config完了之后， 由./scripts/kconfig/生成的，读取.config中的配置，
+然后通过header_print_symbol将=y的定义重置为#define CONFIG_XXX 1的模式写到autoconf.h文件当中。
+2. 作用就是使得你在menuconfig中选中的配置成为C语言当中能识别的头文件格式， 以便在以后使用的时候作为宏定义出现。
+
+	
+Makefile
+有endmenu 时 最后最好留一行空行
+
+make menuconfig ARCH=arm   不然搞成x86的就惨了
+
+extern 函数 要写在头文件 ，表示引用其他文件里的函数，与static相反，static不被别的文件引用，即隐藏
+
+obj-$(CONFIG_KK_GSLX680_HN) += gslx680_hn.o 
+$(obj)/gsl_point_id.o: $(obj)/gsl_point_id   这个是库
+	cp $(obj)/gsl_point_id $(obj)/gsl_point_id.o
+gslx680_hn-objs := gslx680.o gsl_point_id.o   链接到第一行  有objs后缀  gslx680.c 是源文件
+
+函数无参数最好加上void  避免警告warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+
+
+可以用“灌寄存器”的方法来尝试。所谓灌寄存器，
+就是在向sysfs注册 driver的时候提供这样一个结构体：
+
+static struct device_attribute mma7660_dev_attr = {  
+	   .attr = {                  
+				.name = "mma7660_ctl",    
+				.mode = S_IRUSR | S_IWUSR,                
+			   },         
+	   .show = mma7660_show,        
+	   .store = mma7660_store,
+}; 
+	
+ 这个结构体向用户层暴露此芯片的所有寄存器。
+ show函数用于读取某个寄存器值，store函数用于设置某个寄存器的值。
+ 
+ suspend  休眠  保存寄存器值
+ resume   唤醒  载入寄存器值
+例子：
+ echo ‘10000’> /sys/class/timed_output/vibrator/enable  马达震动10s
+ cat /sys/class/timed_output/vibrator/enable  查看剩余震动时间
+ 3290
+ 
+/sys/module/mma7660/parameters/debug_mask    设置mma7660 gsensor的调试等级
+/sys/class/input/inputx
+
+EXPORT_SYMBOL(fun) 导出的函数  在别的地方使用前  要先用extern fun声明一下
+
+默认打开adb调试
+persist.sys.usb.config=mtp,adb \
+	sys.usb.config=mtp,adb \
+	sys.usb.state=mtp,adb \
+	ro.adb.secure=0
+
+	
+Android中自带有framebuffer测试程序mmm system/extras/tests/framebuffer/ -B会得到一个test-fb-simple
+system/extras/tests/有各种测试程序  
+mmm后可以拷到/system/bin里运行测试
+
+
+动态库（也叫共享库）
+
+LDO  降压  输入电压-输出电压    最终会连到电源芯片上
+DCDC  通常用来升压
+
+
+微调 lcd 的参数 刷新率最多是60   不要全然相信 规格书
+
+lcd驱动 drivers/video/sunxi/
+
+
+
+TP 驱动  drivers/input/touchscreen
+TP 没有上层 只有idc标识配置  /android/device/softwinner/astar-hn-common/configs
+
+wifi驱动 drivers/net/wireless/rtl8188eu
+wifi 上层  进行插入驱动是在   android/hardware/libhardware_legacy/wifi/wifi.c
+
+device/softwinner/astar-hn-common/BoardConfig.mk  里 选择WIFI类型 SW_BOARD_USR_WIFI  
+android/hardware/libhardware_legacy/wifi/Android.mk  读取 SW_BOARD_USR_WIFI  然后增加#define
+android/hardware/libhardware_legacy/wifi/wifi.c  里读取#define 然后进行操作
+
+.mk文件里
+LOCAL_CFLAGS-D，增加全局宏定义。
+LOCAL_CFLAGS := -DUSE_JSC相当于在所有源文件中增加一个#define USE_JSC
+LOCAL_CFLAGS := -DUSE_COPY_BIT=1相当于在所有源文件中增加一个#define USE_COPY_BIT 1
+
+LOCAL_CFLAGS += -O0 -g  可选编译选项
+
+uart_2G + usb_wifi
+usb_3G + SDIO_wifi&BT
+
+wifi 要打开才能加载驱动
+
+SDIO跟 usb总线类似
+
+
+android/frameworks/base/media/jni/android_media_MediaScanner.cpp
+里#include <media/mediascanner.h>
+
+是在android/frameworks/av/include/media/mediascanner.h
+    android/frameworks/av/media/libmedia/MediaScanner.cpp
+	
+蓝牙用到串口，就算蓝牙配置好了，但是串口有可能没配置好，调试时看打开库层打印，看串口有无输出
+
+
+蓝牙库层 android/external/bluetooth/bluedroid/hci/src/
+
+蓝牙 确认软件都没问题的话要量一下电压  看有没有少贴东西
+
+模拟信号  数字信号  2G现在是  模拟信号    喇叭也是模拟信号    看有没有接 A/D转换器
+
+音频解码codec上层
+android/device/softwinner/polaris-common/hardware/audio
+配置音量 android/device/softwinner/polaris-common/hardware/audio/phone_volume.conf  配置声音
+驱动
+linux-3.4/sound/soc/sunxi/audiocodec/
+
+
+gsensor
+	驱动 drivers/hwmon 
+	HAL  device/softwinner/wing-common/hardware/libhardware/libsensors
+	
+马达	
+drivers/misc/sunxi-vibrator.c 
+drivers/staging/android/timed_output.c 上一层的驱动
+android/hardware/libhardware_legacy/vibrator/vibrator.c HAL层
+android/frameworks/base/services/jni/com_android_server_VibratorService.cpp JNI
+
+
+Hunk #2 FAILED at 126.  指错误在源文件的126而不是在补丁文件的行数 
+@@ -124,6 +126,7 @@ void codec_client_free(struct codec_client *client)   124 126指 源文件中的行数
+Reversed (or previously applied) patch detected!  Assume -R? [n] y    询问是否复原
+
+
+## 连接符号由两个井号组成，其功能是在带参数的宏定义中将两个子串(token)联接起来
+#符是把传递过来的参数当成字符串进行替代
+
+例子:
+#define PRINT( n ) printf( "token" #n " = %d", token##n )
+int token9 = 9;
+PRINT( 9 );
+那么在编译时，上面的这句话被扩展为： printf( "token" "9" " = %d", token9 );
+
+
+READ_KEY_VALUE(kSUPPORT_##KEY, mSupport##key##Value) 
+##的意思是连接  例如KEY = FRAME_RATE  连接完就是 kSUPPORT_FRAME_RATE
+key = FrameRate                                  mSupportFrameRateValue
+
+定义变量
+#define INIT_PARAMETER(KEY, key)										\
+	memcpy(mUsed##key, "0\0", 2);										\
+	mSupport##key##Value = 0;											\
+	mDefault##key##Value = 0;											\
+	if (readKey(kUSED_##KEY, mUsed##key))								\
+	{                                                                   \
+		if (usedKey(mUsed##key))                                        \
+		{                                                               \
+			READ_KEY_VALUE(kSUPPORT_##KEY, mSupport##key##Value)		\
+			READ_KEY_VALUE(kDEFAULT_##KEY, mDefault##key##Value)	    \
+		}																\
+		else                                                            \
+		{                                                               \
+			/*LOGV("\"%s\" not support", kUSED_##KEY);*/				\
+		}                                                               \
+ 	}
+	
+定义函数
+#define MEMBER_FUNCTION(fun)						\
+	bool CCameraConfig::support##fun(){				\
+		return usedKey(mUsed##fun);					\
+	};												\
+	char *CCameraConfig::support##fun##Value(){		\
+		return mSupport##fun##Value;				\
+	};												\
+	char *CCameraConfig::default##fun##Value(){		\
+		return mDefault##fun##Value;				\
+	};	
+	
+
+pctrl->value = 4; // gkk_modemvol;  打电话 扬声 听筒音量
+
+hn.ril.2gofechoen=0 \
+	hn.ril.2ghandfree=0 \
+	hn.ril.2ghandfreeen=0 \
+	
+	打电话 听筒 喇叭没声音
+	
+	
+PCB  元器件有白边包围
+     一杆是电阻
+     二杆电容
+     NC空脚	 
+	 
+	 
+2/3G   HAL android/hardware/ril/  reference-ril.c   AT 指令	 
+phone_volume.conf  配置codec的音量
+
+音量失真  波形截断
+
+
+2G模拟信号 到 codec音频解码出来  到喇叭
+
+
+调试 首先看  原理图 同步到  PCB 看元器件有无焊漏，焊错
+学习AT指令  对着打电话看
+示波器 失真 看
+声音放大
+
+
+读取库.so文件   android/hardware/libhardware/hardware.c
+
+
+改I2C 总线速度  linux/arch/arm/sunxi/
+                linux/driver/i2c/
+				
+头文件  找不到的话  搜twi  i2c  speed等
+
+
+
+push 驱动进去，要改对权限， 不然会没用		
+
+
+原理图也不是全对的 ==#  坑爹  看波形如果不对，可能有干扰，查看共用的地方		
+
+I2C 上通常要接上拉电阻2.7k  我们的是2k
+
+android/device/softwinner/astar-hn-common/configs/里面很多配置文件
+
+
+如果有多个接口选择的时候，可以故意加入一点错误，看到底是不是编译这个，确定哪些文件是使用的
+
+
+
+原本可以后来不行莫名其妙的情况，可能是误打误撞造成的，升级不会格式化前一次调试留下的数据，可能是受到了前一次的数据影响了
+
+默认亮度，修改frameworks\base\packages\SettingsProvider\res\values\defaults.xml文件中的def_screen_brightness
+
+ifdef __cplusplus 就是判断是不是用C++语言写的程序，这个__cplusplus 好像是C++语言固定的宏
+
+
+xml不能有大写
+
+http://www.20hn.com/g.html  google
+
+android 目录下 直接 make clean
+
+android\frameworks\base\core\res\res\values\config.xml   配置系统的很多东西  最小亮度  多用户单用户。。。
+
+davik里搜到         EMULATED_STORAGE_TARGET
+system/vold里搜到   EMULATED_STORAGE_SOURCE
+
+overlay 是个无情的杀手
+
+算字符串数组的长度
+char* s[] = {"a","ab","abc"}
+sizeof(s)/sizeof(char*)   char* 就是存放字符串指针的大小 为1 字节
+
+JNI  framework/base/core  的系统JNI   framework/base/service  的服务JNI  注册函数  要加在特别的地方
+
+app里的JNI  注册函数自己调用  不用写framework里的东西
+
+
+makefile  和 .mk 后面不能有空格，不然报错  Is a directory.  Stop   
+
+libnativehelper/include/nativehelper/JNIHelp.h:128: error: undefined reference to 'jniRegisterNativeMethods'
+jni Android.mk 的lib 是不是有些没加，可以对比看看
+
+
+生成的.so文件在编译后会自动添加上前缀lib和后缀.so，
+所以Android.mk文件中通过LOCAL_MODULE定义库的名字时，不要加前缀lib和后缀 .so
+如果定义LOCAL_MODULE时添加了前缀lib，则在生成 .so 文件时，不会再重复添加前缀lib
+System.loadLibrary("")时，参数与LOCAL_MODULE定义的名字要保持一致,不需要lib前缀也不需要 .so后缀   findLibrary returned null
+
+
+apk  push到/system/app  要把相应库push到/system/lib
+     push到/system/install 不用
+	 
+下载Linux内核	 
+https://www.kernel.org/pub/linux/kernel/v2.6/	 
+
+
+数据库中数据的默认数据在frameworks/base/packages/SettingsProvider/res/values/defaults.xml中定义，如果要在数据库中添加一个新的字段，则可用如下步骤：
+ 
+1、在defaults.xml中为新加的数据定义一个默认值（当然也可在代码中直接给定）
+  <!-- Default for Settings.Secure.LONG_PRESS_TIMEOUT_MILLIS -->
+    <integer name="def_long_press_timeout_millis">500</integer>
+2、在frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/DatabaseHelper.java中的loadSystemSettings（）方法中加入新字段的添加代码，如下：
+ loadIntegerSetting(stmt, Settings.Secure.LONG_PRESS_TIMEOUT, R.integer.def_long_press_timeout_millis);
+
+Settings.Secure.LONG_PRESS_TIMEOUT   在android/frameworks/base/core/java/android/provider/Settings.java定义
+
+
+import android.os.SystemProperties  这个类是隐藏的，可以使用
+SystemProperties.set("hn.preinstall.running", "true");
+SystemProperties.get("hn.preinstall.running");
+一般在framework里调用
+
+android/build/envsetup.sh  里各种好用的grep
+学会用jgrep "内容" java
+还有cgrep   c/cpp/h
+resgrep     xml
+mgrep       mk
+
+
+struct timeval 和 struct timespec   这两个时间是分部分计算的
+
+struct timespec abstime;
+struct timeval now;
+gettimeofday(&now, NULL);
+int nsec = now.tv_usec * 1000 + (timeout_ms % 1000) * 1000000;
+abstime.tv_nsec = nsec % 1000000000;
+abstime.tv_sec = now.tv_sec + nsec / 1000000000 + timeout_ms / 1000;
+
+pthread_cond_timedwait(&_read_cond, &_read_mutex, &abstime);
+
+
+C调用java
+http://www.cnblogs.com/luxiaofeng54/archive/2011/08/17/2142000.html
+
+C++调用JAVA
+jclass MySurfaceView = env->FindClass("com/hn/robot/MySurfaceView");
+jmethodID setAction = env->GetMethodID(MySurfaceView, "setAction", "(I)V"); 
+ 如果不是静态的方法，似乎一定要主动调用过一次，才会被识别到
+jobject obj = env->AllocObject(MySurfaceView);  
+env->CallVoidMethod(obj, setAction, (jint)100);
+
+
+GetXXXMethodID  和 CallXXXMethod 。
+第一个XXX 表示的是映射方法的类型，如： 静态 跟非静态
+第二个 XXX 表示 调用方法的返回值 ，如：Void,Object,等等。（调用静态方法的时候Call后面要加Static）
+
+JNI三种引用：局部引用、全局引用、弱全局引用
+局部引用和全局引用有不同的生命周期。当本地方法返回时，局部引用会被自动释放。而全局引用和弱引用必须手动释放。
+局部引用或者全局引用会阻止GC回收它们所引用的对象，而弱引用则不会
+
+
+JNI 的多线程
+
+首先要在初始化函数或者on_load函数保存 (my_jvm) 要声明成全局静态 env->GetJavaVM(&my_jvm);  或者my_jvm = jvm;
+在主线程里通过JNIEnv   FindClass，然后env->NewGlobalRef   把他变成全局的，同时声明也要全局静态，这样才能在子线程使用，全局用完要释放
+my_jvm->AttachCurrentThread(&my_env, NULL)子线程通过这个拿到当前线程的JNIEnv, 通过这个可以拿到方法(多线程只能用静态方法)和成员,方法要在java那边先在构造函数调用一次，不然找到的ID会为NULl
+
+AllocObject和NewObject 的不同  NewObject 会显式调用构造函数
+jclass的父类是jobject
+
+
+DSP数字信号处理器        哈佛体系      从    数据处理
+MCU 微控制单元，单片机   冯诺依曼体系  主    系统控制器
+
+android  Camera模组知识学习
+http://blog.csdn.net/xubin341719/article/details/7723725
+
+CSI接口Camera驱动学习
+http://blog.sina.com.cn/s/blog_602f87700101gtic.html
+
+truct list_head
+{
+    struct list_head *next, *prev;
+};
+Linux内核链表中，不是在链表结构中包含数据，而是在数据结构中包含链表节点
+需要用链表组织起来的数据通常会包含一个struct list_head成员
+void list_add(struct list_head *new, struct list_head *head);
+
+lcd  DE mode 和 Sync mode
+Sync mode需要用H-SYNC和V-SYNC同步RGB data；
+DE mode （Data Enable）则只需要DE信号同步RGB data。
+他们的区别在于：如果是用H，V模式的话,注意DE脚是否接地，如果不接地的话，数据无法正常工作，如果是同步模式的话,就按照行和场的模式
+
+
+LCD的接口类型大致有：SPI/I2C/MCU/CPU/RGB/MDDI/MIPI，SPI/I2C用于低速黑白屏，
+MCU/CPU/RGB为并口，在智能机之前的功能机上用的多，手机进入到大屏时代后，
+并口的传输速度跟不上，特别是面临高清播放的应用，能力不足，所以出现了MDDI和MIPI，MDDI为高通推出，
+MIPI为多家重量级厂商联合成立的组织，其推出了一系列移动标准，其中就包括MIPI DSI。
+
+现在的液晶显示屏普遍采用LVDS接口
+
+MIPI联盟下面有不同的WorkGroup，分别定义了一系列的手机内部接口标准，
+比如摄像头接口CSI、显示接口DSI、射频接口DigRF、麦克风/喇叭接口SLIMbus等。 mipi-csi   mipi-dsi
+
+DPI接口也就是通常所说的RGB接口
+
+IPS屏幕 ----Super TFT
+
+开漏输出  上拉作用   这种方式适合在连接的外设电压比单片机电压低的时候  拉高电压 
+上拉  有时避免高阻态
+
+Luma 亮度 是黑白电视可以看到的信号
+
+YUV 空间中，每一个颜色有一个亮度信号 Y，和两个色度信号 U 和 V
+在YUV 家族中, YCbCr 是在计算机系统中应用最多的成员, 其应用领域很广泛,JPEG、MPEG均采用此格式。
+一般人们所讲的YUV大多是指YCbCr。
+
+FPC 连接器  座子
+
+unsigned a = unsigned int a
+
+所谓可重入是指一个可以被多个任务调用的过程，任务在调用时不必担心数据是否会 出错。  就是并发
+
+/device/softwinner/astar-hn-common/overlay/framework
+
+linux 开发有用链接
+http://www.linuxsir.org/bbs/thread277189.html
+
+
+include $(call all-makefiles-under,$(LOCAL_PATH))   这时mk会进入子目录
+
+adb remount  OR
+adb shell mount -o remount rw /system
+
+
+include $(CLEAR_VARS)
+LOCAL_PREBUILT_LIBS := librobotbase.so
+include $(BUILD_MULTI_PREBUILT)
+加入第3方库
+
+librobot_run 之所以不用  是因为 out里面有缓冲文件
+
+LOCAL_SHARED_LIBRARIES := \
+    librobotbase \
+    librobot_run
+
+
+库.so 没有加载成功 ，可能是因为某些方法名没有找到，注意看调试信息
+
+malloc 分配的空间未初始化 还要调用memset
+calloc(n, size)  分配n*size 空间已初始化，适用于数组
+
+kmalloc和vmalloc是分配的是内核的内存,malloc分配的是用户的内存
+kmalloc保证分配的内存在物理上是连续的,vmalloc保证的是在虚拟地址空间上的连续
+kmalloc能分配的大小有限,vmalloc和malloc能分配的大小相对较大
+内存只有在要被DMA访问的时候才需要物理上连续
+vmalloc比kmalloc要慢
+
+kzalloc = kmalloc + memset
+
+C语言内存
+
+代码区（text segment）。存放CPU执行的机器指令
+全局初始化数据区/静态数据区  全局变量、静态变量（包括全局静态变量和局部静态变量）和常量数据（如字符串常量）
+未初始化数据区。亦称BSS区（uninitialized data segment），存入的是全局未初始化变量long  sum[1000];
+栈区（stack）。由编译器自动分配释放，存放函数的参数值、局部变量的值等
+堆区（heap）。用于动态内存分配
+
+
+.so 确保推到lib里面！！！！！！！！！！！不要搞到app里
+
+==的前面改为常数
+=赋值 不同的写法
+
+走前的补充整理：
+values-sw600dp
+第一种后缀：sw<N>dp,如layout-sw600dp, values-sw600dp
+这里的sw代表smallwidth的意思，当你所有屏幕的最小宽度都大于600dp时,屏幕就会自动到带sw600dp后缀的资源文件里去寻找相关资源文件，这里的最小宽度是指屏幕宽高的较小值，每个屏幕都是固定的，不会随着屏幕横向纵向改变而改变。
+第二种后缀w<N>dp 如layout-w600dp, values-w600dp
+带这样后缀的资源文件的资源文件制定了屏幕宽度的大于Ndp的情况下使用该资源文件，但它和sw<N>dp不同的是，当屏幕横向纵向切换时，屏幕的宽度是变化的，以变化后的宽度来与N相比，看是否使用此资源文件下的资源。
+第三种后缀h<N>dp 如layout-h600dp, values-h600dp
+这个后缀的使用方式和w<N>dp一样，随着屏幕横纵向的变化，屏幕高度也会变化，根据变化后的高度值来判断是否使用h<N>dp ，但这种方式很少使用，因为屏幕在纵向上通常能够滚动导致长度变化，不像宽度那样基本固定，因为这个方法灵活性不是很好，google官方文档建议尽量少使用这种方式。
+
+
+通过读取配置文件，是否是3G，来改hotseat
+android/packages/apps/Launcher2/src/com/android/launcher2/LaucherProvider.java   loadDefaultFavoriesIfNecessary() 读取不同xml文件
+android/packages/apps/Launcher2/res/xml 里搞多一份xml文件出来  让程序适配
+
+OneTimeInitializer.apk之前去掉了这个apk 因为里面有些东西影响了开机时hotseat 的显示
+
+通过读取配置文件，是否3G，决定开机时不要安装某些apk   仍然会复制apk到/system/app目录下，但是不会安装
+Z:\a33\v4.4_sdk_v2.0\android\packages\apps\Launcher2\res\xml\default_nophone_workspace.xml
+Z:\a33\v4.4_sdk_v2.0\android\packages\apps\Launcher2\src\com\android\launcher2\LauncherProvider.java
+
+package browser 看包名 和相关信息   通过adb logcat 点击apk  也可以从中看出来包名 和启动activity的名字
+
+kkLibSys.getsystemconfig(""); 他自己写了个C库，这个库可以读取配置文件，在framework层的java文件，引入头文件就可以引用该api
+
+
+底层驱动 调用函数  命令
+//slr added
+static int _runmod( char *modname, char *param1, char *param2, char *param3 )
+{
+  	int result = 0;
+  	char* cmd_argv[] = {modname, param1, NULL};
+   	char* cmd_envp[] = {"HOME=/", "PATH=/sbin:/bin:/usr/bin", NULL};
+
+    result = call_usermodehelper(modname, cmd_argv, cmd_envp, UMH_WAIT_PROC);
+    return result;
+}
+
+linux 内核 文件操作
+static void save_the_world()
+{
+	static char buf[] = "hello";
+	static char buf1[10];
+
+	struct file *fp;
+    mm_segment_t fs;
+    loff_t pos;
+    printk("hello enter\n");
+    fp = filp_open("/data/saveworld", O_RDWR | O_CREAT, 0644);
+    if (IS_ERR(fp)) {
+        printk("create file error\n");
+        return -1;
+    }
+    fs = get_fs();
+    set_fs(KERNEL_DS);
+    pos = 0;
+    vfs_write(fp, buf, sizeof(buf), &pos);
+    pos = 0;
+    vfs_read(fp, buf1, sizeof(buf), &pos);
+    printk("read: %s\n", buf1);
+    filp_close(fp, NULL);
+    set_fs(fs);
+    return 0;
+
+}
+
+Android编译 C程序
+
+hello目录中新建Android.mk文件：
+
+      LOCAL_PATH := $(call my-dir)
+
+      include $(CLEAR_VARS)
+
+      LOCAL_MODULE_TAGS := optional
+
+      LOCAL_MODULE := hello
+
+      LOCAL_SRC_FILES := $(call all-subdir-c-files)
+
+      include $(BUILD_EXECUTABLE)
+
+      注意，BUILD_EXECUTABLE表示我们要编译的是可执行程序。 
+
+使用mmm命令进行编译：
+
+      USER-NAME@MACHINE-NAME:~/Android$ mmm ./external/hello
+
+
+
+spin_lock_irqsave  先关闭中断，再去获得锁，避免死锁
+
+
+DEVICE_ATTR(_name, _mode, _show, _store)
+_name：名称，也就是将在sys fs中生成的文件名称。
+_mode：上述文件的访问权限，与普通文件相同，UGO的格式。
+_show：显示函数，cat该文件时，此函数被调用。
+_store：写函数，echo内容到该文件时，此函数被调用。
+
+struct work_struct
+说白了就是系统延时调度的一个自定义函数
+工作队列函数可以休眠
+
+ 定义struct work_struct irq_queue;
+ 初始化INIT_WORK(&irq_queue,do_irq_queuework);
+ 调用方法：schedule_work(&rq_queue);
+ 
+1 可以把“工作”加入系统的工作队列，让其自动处理
+2 可以自己另外创建自己的工作队列，把“工作”加入自己的工作队列，再调用
+
+
+nor flash 和 nand flash 区别
+
+nand 寿命更长
+nor 可以随机读取，有sram的接口，寻址方便，操作以字节或字为单位 ，可以运行代码   nand读取以512字节为单位，不能运行代码
+nor容量相对小，写入擦除慢，适合存储代码     nand容量大，擦写速度快，适合用户数据存储
+相同容量，nand的尺寸小
+
+输入子系统事件
+#define EV_SYN			0x00    同步事件
+#define EV_KEY			0x01	按键
+#define EV_REL			0x02	相对坐标
+#define EV_ABS			0x03	绝对坐标
+#define EV_MSC			0x04	其他
+#define EV_SW			0x05	
+#define EV_LED			0x11	LED
+#define EV_SND			0x12	sound
+#define EV_REP			0x14	repeat
+#define EV_FF			0x15	力
+#define EV_PWR			0x16	电源
+#define EV_FF_STATUS	0x17    受力状态
+
+延时500ms
+jiffies + msecs_to_jiffies(500);
+
+
+linux shell;
+= 赋值号左右不能有空格  =等号左右要有空格
+$?   上一条命令的值
+$#   参数个数
+
+方括号两边必须有 空格
+
+Shell脚本中定义的变量是global的，其作用域从被定义的地方开始，到shell结束或被显示删除的地方为止
+export 变量 定义公用变量，把变量输出到环境中
+当Bash shell执行一个程序时,将首先为该程序建立一个新的执行环境,称为子shell。
+在Bash Shell中变量都是局部的,它们只在创建它们的子Shell中有意义。
+使用export后,变量被设置为全局变量,这时可以被其它子Shell所识别 。
+
+函数变量显示定义为local的，其作用域局限于函数内
+
+#!/bin/bash
+#define the function ltx_func
+ltx_func()
+{
+   echo "param 1: $1"
+}
+#call the function ltx_func
+ltx_func 100
+
+结果：
+100
+解析：函数参数是local的，通过位置变量来访问。打印命令输出函数的第一个参数。
+
+
+./build.sh  编译内核shell
+./makeimg_prj  编译android
+./sh_pack (-p updatekernel) -p packfw  打包
+
+
+单引号将消除被括在其中的所有特殊字符的含义
+
+
+
+-eq 	：等于则为真
+-ne 	：不等于则为真
+-gt 	：大于则为真
+-ge 	：大于等于则为真
+-lt  	：小于则为真
+-le  ：小于等于则为真
+
+vivi
+网络编程知识
+
+储备company
+
+
+这几个宏的使用格式为：
+_IO (魔数， 基数);
+_IOR (魔数， 基数， 变量型)
+_IOW  (魔数， 基数， 变量型)
+_IOWR (魔数， 基数，变量型 )
+
+"A" ~ "Z" 或者 "a" ~ "z"不同的设备驱动程序最好设置不同的魔数,某个驱动程序的ioctl命令有自己的魔数，避免误操作
+基数用于区别各种命令
+变量型使用 arg 变量指定传送的数据大小
+
+LCD 节点
+/dev/video0  采集数据
+/dev/disp    显示   将摄像头的缓冲区 复制 给lcd的缓冲区
+
+
+I2C 开始与结束
+起始标志（Start/Re-Start）：当SCL为高电平时，SDA由高电平变低电平
+停止标志(Stop):当SCL为高电平时，SDA由低电平变为高电平
+
+
+#define S3C_ADDR_BASE (0xF4000000)地址与0x7F008000的偏差是初始化时MMU将物理地址重映射的到的一个虚拟地址
+而0xF4000000应该是重映射后GPACON的虚拟地址，
+而linux内核中的虚拟地址到物理地址的转换是由软件实现的。
+
+
+字符设备就要抓住 cdev  和他的fops  ioctl    向上注册register后，他的专属结构体就会在上层存在一个数组里，以他的次设备号为索引
+
+
+
+const & 指针
+　　　　1)、const在前面
+　　const int nValue； //nValue是const
+　　const char *pContent; //*pContent是const, pContent可变
+　　const (char *) pContent;//pContent是const,*pContent可变
+　　char* const pContent; //pContent是const,*pContent可变
+　　const char* const pContent; //pContent和*pContent都是const 
+　　　　2)、const在后面，与上面的声明对等
+　　int const nValue； // nValue是const
+　　char const * pContent;// *pContent是const, pContent可变
+　　(char *) const pContent;//pContent是const,*pContent可变
+　　char* const pContent;// pContent是const,*pContent可变
+　　char const* const pContent;// pContent和*pContent都是const 
+
+判断原则：
+　　  沿着*号划一条线，如果const位于*的左侧，则const就是用来修饰指针所指向的变量，
+		即指针指向为常量；如果const位于*的右侧，const就是修饰指针本身，即指针本身是常量。
+		
+		
+声明为extern 的变量就在内存只有一份副本
+
+strlen只能用char*做参数，且必须是以''\0''结尾的
+数组做sizeof的参数不退化，传递给strlen就退化为指针了
+
+Linux的I2C构架分为三个部分：
+1）I2C core框架
+      提供了核心数据结构的定义和相关接口函数，用来实现I2C适配器
+	驱动和设备驱动的注册、注销管理，以及I2C通信方法上层的、与具体适配器无关的代码，
+	为系统中每个I2C总线增加相应的读写方法。
+    I2C core框架具体实现在/drivers/i2c目录下的i2c-core.c和i2c-dev.c
+2） I2C总线驱动
+        定义描述具体I2C总线适配器的i2c_adapter数据结构、实现在具体I2C适配器上的I2C总线通信方法，并由i2c_algorithm数据结构进行描述。 
+		经过I2C总线驱动的的代码，可以为我们控制I2C产生开始位、停止位、读写周期以及从设备的读写、产生ACK等。
+        I2C总线驱动具体实现在/drivers/i2c目录下busses文件夹。
+		例如：Linux I2C GPIO总线驱动为i2c_gpio.c. I2C总线算法在/drivers/i2c目录下algos文件夹。例如：Linux I2C GPIO总线驱动算法实现在i2c_algo_bit.c.
+3） I2C 设备驱动
+       是对具体I2C硬件驱动的实现。I2C 设备驱动通过I2C适配器与CPU通信。
+	   其中主要包含i2c_driver和i2c_client数据结构，i2c_driver结构对应一套具体的驱动方法，例如：probe、remove、suspend等，需要自己申明。
+	   i2c_client数据结构由内核根据具体的设备注册信息自动生成，设备驱动根据硬件具体情况填充。
+	   
+
+（一）i2c总线驱动
+1）在那个<devices.c>文件中，声明平台设备占用的<系统资源>，然后定义一个<平台设备>，并注册这个<平台设备>到平台总线上
+2）在i2c-gpio.c文件中，<声明该驱动支持的设备列表>，然后定义一个平台驱动结构，并注册这个<平台驱动>到平台总线上
+（二）i2c设备驱动
+1）同样在<devices.c>文件下，在<对应总线的设备列表中声明一个i2c设备结构>，
+然后通过i2c_register_board_info（）函数，将这个<设备列表>注册到i2c总线上
+2）在lis35de.c文件中，声明支持的i2c设备列表和一个<i2c设备驱动结构体i2c_driver>，然后将其注册到i2c总线	   
+
+
+SPI的通信是通过消息队列机制，而不是像I2C那样通过与从设备进行对话的方式。   I2C 有回复   SPI 没办法确定收到数据
+
+
+SPI总线由MISO（串行数据输入）、MOSI（串行数据输出）、SCK（串行移位时钟）、(  CS（使能信号）4个信号线组成  )
+MOSI:master output slave input,即主机输出从机输入。可以理解主机写从设备。
+MISO:master input slave output,即主机输入从机输出。可以理解主机读从设备。
+
+
+SPI
+
+一个时钟      前沿采样，后沿输出     MOSI接MISO   MISO接MOSI  一次传输 包含着主的发送时序  从的接收时序
+
+数据输出通过SDO线，数据在时钟上沿或下沿时改变，在紧接着的下沿或上沿被读取。 完成一位数据传输，输入也使用同样原理。
+
+
+串行异步通信还是串行同步通信
+
+收发的时钟是异步的
+如果是同步通信，在要求在接收段要生成一个与发送信号同频同相的本地脉冲，用于与数据中的同步位同步，便于信息提取
+
+
+C  内存分配
+
+栈区（stack）—由编译器自动分配释放，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈。
+堆区（heap）—一般由程序员分配释放，若程序员不释放，程序结束时可能由OS回收。注意它与数据结构中的堆是两回事，分配方式倒是类似于链表
+全局区（静态区）（static）—全局变量和静态变量的存储是放在一块的，初始化的全局变量和静态变量在一块区域，未初始化的全局变量和未初始化的静态　　                                变量在相邻的另一块区域。  程序结束后由系统释放。
+常量区—常量字符串就是放在这里的，直到程序结束后由系统释放。上面的问题就在这里！！！还有const
+代码区—存放函数体的二进制代码。
+
+字符串常量被分配在程序的常量区，直到整个程序结束才被销毁
+
+全局变量是一定会初始化的
+
+int a = 0; //全局初始化区
+char *p1; //全局未初始化区
+    
+main()
+{
+    int b; //栈
+    char s[] = "abc"; //栈
+    char *p2; //栈
+    char *p3 = "123456"; //123456\\0在常量区，p3在栈上。
+    static int c =0;//全局（静态）初始化区
+    p1 = (char *)malloc(10);    
+    p2 = (char *)malloc(20);//分配得来得10和20字节的区域就在堆区。
+    strcpy(p1, "123456"); //123456\\0放在常量区，编译器可能会将它与p3所指向的"123456"优化成一个地方。        
+} 
+
+
+
+
+result = register_chrdev_region(devno,2, "globalmem");
+result = alloc_chrdev_region(&devno, 0, 2, "globalmem");
+globalmem_setup_cdev(&globalmem_devp[0], 0); 
+globalmem_setup_cdev(&globalmem_devp[1], 1); 
+
+支持两个设备的驱动
+/dev/globalmem0 对应主设备号 globalmem_major ，次设备号 0 ，
+/dev/globalmem1 对应 主设备 号 globalmem_major ， 次设备号1 
+
+
+稳定排序和非稳定排序
+一组数排序前是a1,a2,a3,a4,a5，其中a2=a4，经过某种排序后为a1,a2,a4,a3,a5，
+则我们说这种排序是稳定的，因为a2排序前在a4的前面，排序后它还是在a4的前面。假如变成a1,a4,
+a2,a3,a5就不是稳定的了。
+
+
+/sys/class/power_supply/ac/online AC 电源连接状态
+/sys/class/power_supply/usb/online USB电源连接状态
+/sys/class/power_supply/battery/status 充电状态
+/sys/class/power_supply/battery/health 电池状态
+/sys/class/power_supply/battery/present 使用状态
+/sys/class/power_supply/battery/capacity 电池 level
+/sys/class/power_supply/battery/batt_vol 电池电压
+/sys/class/power_supply/battery/batt_temp 电池温度
+/sys/class/power_supply/battery/technology 电池技术
+
+
+8位2进制   最高位为 符号 1=-
+引入原码 反码 和补码的目的就是为了解决减法问题，因为计算机CPU的运算器中只有加法器，要把减法转化成加法来计算
+正数 原码=反码=补码
+负数 反码数值取反，符号不变  补码=反码数值+1
+
+
+增加一个项目，(device/softwinner/复制一个项目)
+lichee\tools\pack\chips\sun8iw3p1\configs\android  复制一个项目
+
+打包核心语句  MODULE_NAME  项目名
+\lichee\tools\pack
+./pack -o do_prepare -c sun8iw3p1 -p android -b $MODULE_NAME
+./pack -o do_pack -c sun8iw3p1 -p android -b $MODULE_NAME
+
+
+lichee/build.sh pack  也可以编译打包固件
+
+
+TP中断口接上拉，低电平触发，(触摸IC内部没有上拉)，因为IC的那个脚可能只能拉低
+
+推挽输出:可以输出高,低电平,连接数字器件;
+开漏输出:输出端相当于三极管的集电极. 要得到高电平状态需要上拉电阻才行
+
+
+
+1、根据I2C总线规范，总线空闲时两根线都必须为高；
+这是规定，动不了的，不然什么叫标准呢？其实所谓的这个神圣的标准也并不是多么邪乎，你想啊，只有是高的才能拉成低的，难道谁可以把低的拉成高的吗？所以这是之所以规定空闲时必须为高的一个原因，要是保持“低”的话，那是不可能成为“多主”总线的。
+
+2、上拉电阻的问题；
+
+但问题是，你要是直接接电源的来实现高的话，一旦其他器件拉低时岂不危险？
+
+
+所以，这个上拉电阻有保护作用,(上拉电阻提供的电流比较小)。如果你确信直接接电源没问题（比如有短路保护等，呵呵），也可以试一试，问题的关键是主器件要能正确的拉低或置高，从器件要能明确地区分高、低就可以了，这是问题的关键，当然，还有时序问题，不能混乱！
+
+
+开漏输出(会有两个三极管相连，一个导通时，另一个不导通)就是不输出电压，低电平时接地，高电平时不接地。如果外接上拉电阻，则在输出高电平时电压会拉到上拉电阻的电源电压。这种方式适合在连接的外设电压比单片机电压低的时候。
+推挽输出就是单片机引脚可以直接输出高电平电压。低电平时接地，高电平时输出单片机电源电压。这种方式可以不接上拉电阻。但如果输出端可能会接地的话，这个时候输出高电平可能引发单片机运行不稳定，甚至可能烧坏引脚。
+	
+开漏输出_OUT_OD ——IO输出0接GND，IO输出1，悬空，需要外接上拉电阻，才能实现输出高电平。
+推挽输出_OUT_PP ——IO输出0-接GND， IO输出1 -接VCC，读输入值是未知的	
+
+
+Android分区
+;------------------------------>mmcblk0p2/nanda
+bootloader  65536K    64M
+;------------------------------>mmcblk0p5/nandb
+env       32768       32
+;------------------------------>mmcblk0p6/nandc
+boot      32768       32
+;------------------------------>mmcblk0p7/nandd
+system    1572864     1536
+;------------------------------>mmcblk0p8/nande
+data      2097152     2048
+;------------------------------>mmcblk0p9/nandf
+misc      32768       32
+;------------------------------>mmcblk0p10/nandg
+recovery  65536       64
+;------------------------------>mmcblk0p11/nandh
+cache     1048576     1024
+;------------------------------nandi, store encryptable
+metadata   32768      32
+;------------------------------>nandj, data image private
+private    32768      32
+;------------------------------>nandk, UDISK
+UDISK
+
+
+状态栏 电量显示去掉
+从这里/frameworks/base/packages/SystemUI/res/layout/status_bar.xml
+跟到frameworks/base/packages/SystemUI/src/com/android/systemui/BatteryMeterView.java里修改
+
+android/  执行 make installclean
+
+
+
+很多时候我们需要更改应用或系统的资源（文字、颜色、图片），其中最重要之处就是确定好修改的位置。我是按如下方法做的：
+一、如果是文字相关的，我们将界面上可以看到的相关文字作为关键词在相关目录下查找，可以查出引用和定义引关键词的位置，一般情况下是定义在strings.xml 中。
+然后根据name查找，可以定位出它在哪些布局文件中被引用，继而对具体控件进行修改。
+二、 如果是图片资源相关的，我们先根据看到的图片，到res文件夹中去找这张图片，根据其文件名在相关目录下查找，看在哪个布局文件中引用了它。
+三、有的控件的图片不容易找到，可以先从styles.xml、themes.xml等入手，找到相关控件的属性位置后，找到图片名称，然后根据名字去res 下找图片。
+四、 如果是通过RGB指定颜色的，比较难定位，也只能第三步一样的方法，一般这种情况也比较少。
+
+系统资源修改：
+1、UI控件一般在frameworks\base\core\java\android\widget和 frameworks\base\core\res\res中修改。
+2、如果只换图片，则只要替换framework-res.apk或 SystemUI.apk里图片即可，无需重编译。
+      九宫格图片要用自带的draw9patch处理。
+3、如果要改xml或java文件，就需要重新编译系统。
+4、状态栏、通知栏一般在SystemUI.apk中修改。
+5、控件一般在 attrs.xml、themes.xml、styles.xml、colors.xml中修改
+6、有时改后编译，发现并未发生改变，则将mydroid/out/target/common/obj/APPS中的相关工程的中间文件删掉再重新编译即可。
+7、生成的系统级应用都在mydroid/out/target/product/m801/system/app目录中。
+
+
+I2C写流程
+
+写寄存器的标准流程为：
+1.    Master发起START
+2.    Master发送I2C addr（7bit）和w操作0（1bit），等待ACK
+3.    Slave发送ACK
+4.    Master发送reg addr（8bit），等待ACK
+5.    Slave发送ACK
+6.    Master发送data（8bit），即要写入寄存器中的数据，等待ACK
+7.    Slave发送ACK
+8.    第6步和第7步可以重复多次，即顺序写多个寄存器
+9.    Master发起STOP
+
+
+读寄存器的标准流程为：
+1.    Master发送I2C addr（7bit）和w操作1（1bit），等待ACK
+2.    Slave发送ACK
+3.    Master发送reg addr（8bit），等待ACK
+4.    Slave发送ACK
+5.    Master发起START
+6.    Master发送I2C addr（7bit）和r操作1（1bit），等待ACK
+7.    Slave发送ACK
+8.    Slave发送data（8bit），即寄存器里的值
+9.    Master发送ACK
+10.    第8步和第9步可以重复多次，即顺序读多个寄存器
+
+
+ 开始信号：SCL为高电平时，SDA由高电平向低电平跳变，开始传送数据。
+   结束信号：SCL为高电平时，SDA由低电平向高电平跳变，结束传送数据。
+   
+ 在CLK的波峰传数据，低电平改变数据
+ 
+ 
+ SPI  用上升沿来锁存数据，数据线的电平会在一个脉冲周期保持着 直到下降沿改变数据
+ 
+ 
+ 480 427 30
+p 1 0 part0
+p 0 0 part1
+480 427 30  ---这里的480代表图片的像素（大小）宽度，427代表图片的像素（大小）高度，30代表帧数；（1秒放30帧）
+ p 1 0 part0 ---这里的p代表标志符，1代表循环次数为1次，0代表阶段间隔时间为0，part0代表对应的文件夹名，为第一阶段动画图片目录；
+ p 0 0 part1---这里的p代表标志符，0代表本阶段无限循环，0代表阶段间隔时间为0，part1代表对应的文件夹名，为第二阶段动画图片目录；
+
+http://blog.csdn.net/lxjsailor/article/details/7726556
+推挽输出
+
+http://blog.csdn.net/ruanjianruanjianruan/article/details/38523973
+箭头朝内 PNP   朝外 NPN          基极b   发射极e是有箭头的那边     集电极是c 箭头对则的一边
+导通
+ b 极（基极）和 e 级（发射极）PNP  e>b  0.7V
+ e 级（发射极）和 b 极（基极）NPN  b>e  0.7V
+
+在相应位置1时，P-MOS导，通N-MOS截止，输出电压为VDD；在相应位置0时，N-MOS导通，P-MOS截止，输出电压为VSS，这就是所谓的推挽。
