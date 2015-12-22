@@ -1,0 +1,1067 @@
+192.168.0.82    config
+        0.57    
+        0.228:8080   compile server
+
+
+git clone git@192.168.0.57:project name
+
+
+要先登录http://192.168.0.228:8080/view/job/q101-rockchip/configure
+
+文件共享，文件浏览器ctrl+l  smb://192.168.0.82/share/
+
+编译命令
+
+make q101_defconfig
+make menuconfig
+make q101.img
+
+cd u-boot/
+make rk3128_defconfig
+make
+
+. build/envsetup.sh
+make
+
+
+
+sudo kermit -c
+*进入命令模式,步骤如下： 
+1)输入"[Ctrl]\". 
+2)输入"c". 
+sudo screen 115200
+
+
+rkflashtool
+
+0x00006000@0x0000E000(kernel)  0xE000偏移   0x6000大小
+
+[    4.661500] nand part    	:   offset        end  flag 
+[    4.661524] rknand_uboot 	:     2000 -     4000  (00)   2000
+[    4.662250] rknand_misc 	:     4000 -     6000  (00)   2000
+[    4.662695] rknand_resource 	:     6000 -     e000  (00)   8000
+[    4.663121] rknand_kernel 	:     e000 -    14000  (00)   6000
+[    4.663552] rknand_boot 	:    14000 -    1a000  (00)   6000
+[    4.663978] rknand_recovery 	:    1a000 -    2a000  (00)   10000
+[    4.664392] rknand_backup 	:    2a000 -    4a000  (00)
+[    4.664775] rknand_cache 	:    4a000 -    8a000  (00)
+[    4.665151] rknand_userdata 	:    8a000 -   288000  (00)
+[    4.665548] rknand_metadata 	:   288000 -   28a000  (00)
+[    4.665935] rknand_kpanic 	:   28a000 -   28c000  (00)
+[    4.666374] rknand_system 	:   28c000 -   40c000  (00)   180000
+[    4.666770] rknand_user 	:   40c000 -   ea0000  (00)   
+
+
+rk3026
+
+Kernel command line: console=ttyFIQ0 androidboot.console=ttyFIQ0 waveform_addr=0x7ff00000 init=/init initrd=0x    62000000,0x00120000 mtdparts=rk29xxnand:0x00002000@0x00002000(misc),0x00004000@0x00004000(kernel),0x00008000@0x00008000(boot),0x    00010000@0x00010000(recovery),0x00020000@0x00020000(backup),0x00040000@0x00040000(cache),0x00200000@0x00080000(userdata),0x00002    000@0x00280000(kpanic),0x00100000@0x00282000(system),-@0x00382000(user) bootver=2014-07-01#2.15 firmware_ver=4.2.2
+
+sudo rkflashtool w 0x4000 0x4000 <kernel.img
+sudo rkflashtool w 0x282000 0x100000 <system.img
+
+
+
+echo 0x1f3a > ~/.android/adb_usb.ini
+sudo chmod a+rx /etc/udev/rules.d/70-android.rules
+
+sudo service udev restart
+sudo adb kill-server
+sudo adb start-server
+
+
+~/.android$ adb_usb.ini
+加入lsusb显示的 号
+
+在kermit正常运行时，按下“Ctrl+\”并输入"c"，返回到
+kermit的命令提示符，此时输入“log session”即可在当前目
+录下生成一个session.log的文档
+
+ctrl+h    查看隐形文件
+
+LCD
+{
+
+查看屏幕刷新频率
+cat sys/class/graphics/fb0/fps
+
+刷新率=dotclock/(（xres+left_margin+right_margin+hsync）*(yres+upper_margin+low_margin+vsync))
+尽量保证为60
+从软件上来说，DE模式和SYNC模式是一样的，软件上不做区分
+
+Left_margin + right_margin + hsync + xres = horizontal period
+Upper_margin + low_margin + vsync + yres = vertical period
+
+HFB + HSYNC + HBP = Horizontal blank time
+VFP + VSYNC + VBP = vertical blank time
+
+}
+
+
+ro.sf.hwrotation=180
+ro.sf.rotation
+
+
+frameworks/base/services/jni/SurfaceFlinger.cpp   ro.sf.hwrotation-->mHardwareOrientation-->new DisplayDevice(..mHardwareOrientation);
+
+frameworks/native/services/surfaceflinger/DisplayDevice.cpp  构造  setProjection  getOrientationTransform
+
+frameworks/base/services/jni  里也可以找到  ro.sf.hwrotation 不知道什么用
+
+
+board-rk3026-ebook-power.c   regulator
+
+
+keys相关 系统层的映射
+arch/arm ..board-rk3026-ebook.c       kernel/driver/input/rk29_keys.c   frameworks/base/data/keyboards/Generic.kl
+按键从linux到android  http://blog.csdn.net/kangear/article/details/12110951
+广播键盘信息  http://blog.csdn.net/yearafteryear/article/details/9060075
+
+frameworks/base/core/java/android/view/KeyEvent.java
+frameworks/base/policy/src/com/android/internal/policy/impl/PhoneWindow.java
+
+find . -name "*.kl"
+
+
+#if defined(CONFIG_MACH_RK3026_T63)		
+
+vim .git/config  查看分支
+
+./build.sh -p sun8iw3p1
+
+
+
+http://blog.csdn.net/yangkuanqaz85988/article/details/38375183   linux基本驱动阐述
+
+Graphics support
+use ebc
+Epd Panel Select
+v220 eink_1200X825
+
+
+ Input device support  --->
+ Touchscreens  --->
+ Cypress TrueTouch Gen4 Touchscreen Driver   (TOUCHSCREEN_CYPRESS_CYTTSP4)
+
+regs.h CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP4_PLATFORM_TTCONFIG_UPGRADE
+
+
+driver/video/rockchip/rk_epd/epdpower
+
+intermediates/classes-full-debug.jar] 错误 41 $ make clobber  $ make
+
+_devinit ，标记设备初始化使用的代码
+
+
+察看 电源相关  可以从 sys/class/power_supply  的结点来搜索
+
+__FILE__   __func__    __LINE__
+
+
+
+
+加宏  适配自己代码
+
+复位脚不知道有没有影响
+TP LDO  开了
+
+I2C 波形有时开机写的时候难捕捉, 波形要对到对的极不然一直拉高
+有些变量unclaired 可能是因为  #define的原因
+
+TP 驱动 上报点前 可以  转化xy,独立翻转x,y,通过#define 开关,可以修该分辨率
+
+
+
+
+
+如果推后执行的任务需要睡眠，那么就选择工作队列；如果推后执行的任务不需要睡眠，那么就选择tasklet
+
+ 下半部仅仅是强调不是马上执行，通常下半部在中断处理程序一返回就会马上运行，下半部的关键在于当他们运行的时候，允许响应所有的中断。
+
+linux  中断下半部
+http://blog.csdn.net/liuhongwei123888/article/details/8681050
+
+中断不能有进程调度  schedule  或能引起睡眠的东西  mutex_lock也不能有，下半部的 work可以有睡眠
+
+static irqreturn_t key_handler(int irqno, void *dev_id)  
+{  
+    printk("[KERN] %s %d\n", __func__, __LINE__);  
+      
+    // 1. 访问硬件 读取数据 清中断  
+    printk("[KERN] %s %d\n", __func__, __LINE__);  
+    mywork.data = 10;  
+  
+    // 2. 调度中断的下半部处理 数据  
+    schedule_work(&mywork.work);  
+    printk("[KERN] %s %d\n", __func__, __LINE__);  
+  
+    return IRQ_HANDLED;  
+}  
+
+软中断和硬中断
+
+硬中断是由硬件产生的，比如，像磁盘，网卡，键盘，时钟等。每个设备或设备集都有它自己的IRQ（中断请求）。基于IRQ，CPU可以将相应的请求分发到对应的硬件驱动上
+硬中断可以直接中断CPU。它会引起内核中相关的代码被触发
+
+
+软中断并不会直接中断CPU。也只有当前正在运行的代码（或进程）才会产生软中断。这种中断是一种需要内核为正在运行的进程去做一些事情（通常为I/O）的请求
+
+
+busybox hexdump /dev/input/event1
+
+
+1. 键盘：
+
+# cat /dev/input/event0 | hexdump
+			    type code value	
+0000000 f6a6 4e15 154b 0006 0001 0004 0001 0000
+0000010 f6a6 4e15 1557 0006 0000 0000 0000 0000
+0000020 f6a6 4e15 8510 0008 0001 0004 0000 0000
+0000030 f6a6 4e15 8517 0008 0000 0000 0000 0000
+
+共九列：
+
+第六列表示上报事件: 0001 --> EV_KEY; 0000 ---> EV_SYN
+
+第七列表示键值: 0004 --> KEY_3
+
+第八列表示按键事件: 0001 --> PRESS, 0000 --> RELEASE
+
+2. 触摸屏（电容屏）
+
+0000250 f832 4e15 c502 0006 0003 0039 0020 0000
+0000260 f832 4e15 c50f 0006 0003 0030 0004 0000
+0000270 f832 4e15 c514 0006 0003 0035 0263 0000
+0000280 f832 4e15 c519 0006 0003 0036 01fd 0000
+0000290 f832 4e15 c520 0006 0001 014a 0001 0000
+00002a0 f832 4e15 c525 0006 0003 0000 0263 0000
+00002b0 f832 4e15 c52b 0006 0003 0001 01fd 0000
+00002c0 f832 4e15 c530 0006 0000 0000 0000 0000
+00002d0 f832 4e15 be99 0007 0003 0039 ffff ffff
+00002e0 f832 4e15 bea5 0007 0001 014a 0000 0000
+00002f0 f832 4e15 bea8 0007 0000 0000 0000 0000
+
+
+第七列表示上报事件和： 0039 --> ABS_MT_TRACKING_ID; 0030 --> ABS_MT_TOUCH_MAJOR; 0035 --> ABS_MT_POSITION_X; 0036 --> ABS_MT_POSITION_Y
+
+014a --> BTN_TOUCH
+
+
+/sys/devices/platform/rk28_i2c/i2c-adapter/i2c-0/0-0024#
+
+
+打印出内核调用堆栈
+#include <asm/ptrace.h>
+dump_stack();
+
+
+grep "str in file" file
+find . -name filename
+
+grep "content" * -r -n行号
+content里面有特殊字符要转义  如\
+
+改触摸屏 改分辨率
+
+
+i            在光标前插入字符
+
+I            在当前行的行头插入字符
+
+a            在光标后添加字符
+
+A            在当前行的行尾添加字符
+
+o            在当前行后添加新行
+
+O            在当前行前添加新行
+
+
+电源管理 
+http://www.wowotech.net/pm_subsystem/rpm_overview.html
+
+如何在linux内核中调用用户空间的程序 
+http://blog.chinaunix.net/uid-20321537-id-1966898.html
+call_usermodehelper
+
+
+static int boyue_calibration(void)
+{
+    int result = 0;
+    char cmd_path[] = "/bin/test";
+    char* cmd_argv[] = {cmd_path,NULL,NULL};
+    char* cmd_envp[] = {"HOME=/", "PATH=/bin:/sbin:/usr/bin", NULL};
+printk(KERN_ERR "[slr] calibration----------------------------------2\n");
+
+    result = call_usermodehelper(cmd_path, cmd_argv, cmd_envp, UMH_WAIT_PROC);
+    printk(KERN_DEBUG "test driver init exec! there result of call_usermodehelper is %d\n", result);
+    printk(KERN_DEBUG "test driver init exec! the process is \"%s\", pid is %d.\n",current->comm, current->pid);
+    return result;
+}
+
+
+
+
+TP
+
+CATA高分屏
+先浏览了源代码，有些是测试用的，有些是不同型号的文件，有些是共同的，核心的，基础的文件，写makefile，最好是把原生宏加上去
+I2C 地址有两个，第一个地址是调试用，进入调试模式，读取ID,以此来做驱动的兼容，用完后就离开调试模式，另外一个地址正常使用，驱动里report 事件前，有些宏可以用来翻转x,y 坐标，或者转换
+I2C 速度有问题，设置了I2C 速度
+
+
+XD4 从android linux 3.0内核驱动 移植到  linux2.6.25
+改了各种API, 有些函数不一定都在头文件里，可能只是声明在头文件，定义可能在内核的别的目录，
+发现i2c读取有时内核会崩溃，查找原因是因为中断上部不能加锁，改用工作(线程)进行,里面可以加锁，可以发生调度和睡眠
+配置了IO口，中断忘记配置上拉，从示波器看到似乎被拉低，导致开机没有中断，
+上电时驱动里  手动拉高低高 中断脚，触发触摸ＩＣ 中断，然后I2C 读取值后，判定处于哪种模式，从一个模式变为另一种模式，
+I2C 读写没成功，后来参考了同目录下的其他驱动，这个驱动的读，只要发一个msg就可以，不用先写
+有些机器触摸不灵敏，需要通过写i2c来启动校准，电阻值什么的，原本想在驱动里通过往节点写数据来解决，但是那时文件系统还没起来，所以行不通
+有些机器在机器进入短休眠时，唤不醒，刚开始以为是系统屏蔽了中断，经过查找没有发现，觉得是休眠时中断引脚电压下降(3.3->2.8)，触摸IC内部的固件件发生了什么，在板文件里ddr里系统进入休眠的地方屏蔽掉了降低电压的代码(是用i2c直接写配置进电源芯片的)，而不是在电源芯片设置电压的地方
+电源管理的没有完全移植过来，只在suspend 和 resume 时判断处于深休眠时关掉了中断
+到最后有4片还不行，复位了后发生中断，但是I2C没读到想要的数据，降低拉高低复位脚的延时，怀疑是延时过长，触摸IC 变化发生过了
+最后剩下两片有问题，没办法了
+
+git commit --amend   更改最后一次注释
+
+
+改了 axp  vbusen 的宏   注释那里有个bug input/output  现在改成输出 1   等要改回去
+在 driver/video/spiflash 里 拉低了otg_drv   保证不烧东西
+
+
+  
+版文件 加了 改IO口的东西
+
+msg 驱动 复位教 跟  otg 有冲突
+
+使用方法
+   第一、在模块函数定义之后使用EXPORT_SYMBOL（函数名）
+   第二、在掉用该函数的模块中使用extern对之声明
+   第三、首先加载定义该函数的模块，再加载调用该函数的模块
+
+touch home/root/tp_calibration
+touch tp_calibration
+中断 定时器里 记得不能加锁，睡眠  要用 work_struct 
+
+T63  长按怎么不行了？？
+T63  休眠拔插  OTG——DRV  为高 有问题
+
+造成不稳定的情况 要考虑供电是否符合规格
+
+
+手指滑动上报事件其实就是（判断如果是在移动的过程中），连续上报绝对坐标事件，至于是否是单点还是画线交给上层判断
+
+多点触摸没啥好特别的，就是把多个单点捆绑起来，组合成一组坐标值。然后上层应用对其手势进行解析，就有了我们平常看到的两个手指对图片进行缩放等功能。从Linux-2.6.30才对多点触摸支持。
+ 
+3.2 单点触摸和多点触摸
+l  单点触摸和多点触摸都是基于输入子系统来做，所以对于在软件上的实现区别不是很大。
+ 
+l  参数设置
+单点触摸：
+Input_dev->evbit[0]= BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+Input_dev->keybit[BIT_WORD(BTN_TOUCH)]= BIT_MASK(BTN_TOUCH);
+input_set_abs_params(input_dev,ABS_X, 0, xmax, 0, 0);
+input_set_abs_params(input_dev,ABS_Y, 0, ymax, 0, 0);
+ 
+多点触摸：
+__set_bit(EV_ABS,input_dev->evbit);
+/* fingerposition */
+input_set_abs_params(input_dev,ABS_MT_POSITION_X, xmin, xmax, 0, 0);
+input_set_abs_params(input_dev,ABS_MT_POSITION_Y, ymin, ymax, 0, 0);
+input_set_abs_params(input, ABS_MT_TOUCH_MAJOR, 0, touch_max, 0, 0);
+input_set_abs_params(input, ABS_MT_WIDTH_MAJOR, 0, width_max, 0, 0);
+….. //可能还设置了其它的事件代码
+ 
+l  数据上报方式
+单点触摸：
+input_report_abs(input_dev,ABS_X, xp);
+input_report_abs(input_dev,ABS_Y, yp);
+input_report_key(input_dev,BTN_TOUCH, 1);
+input_sync(input_dev);
+ 
+多点触摸：
+/* 上报第一个点*/
+input_report_abs(input_dev,ABS_MT_POSITION_X, xp1);
+input_report_abs(input_dev, ABS_MT_POSITION _Y, yp1)
+input_report_abs(priv->input, ABS_MT_TOUCH_MAJOR, value);
+value的值必须是要变化的，然后触摸功能无法实现     
+input_report_abs(priv->input, ABS_MT_WIDTH_MAJOR, 0);
+input_mt_sync(input_dev);
+ 
+/* 上报第二个点*/
+input_report_abs(input_dev,ABS_MT_POSITION_X, xp2);
+input_report_abs(input_dev, ABS_MT_POSITION _Y, yp2)
+input_report_abs(priv->input, ABS_MT_TOUCH_MAJOR, value);  /* ABS_MT_TOUCH_MAJOR ：触点面积事件 */
+value的值必须是要变化的，然后触摸功能无法实现     
+input_report_abs(priv->input, ABS_MT_WIDTH_MAJOR, 0);  /* ABS_MT_WIDTH_MAJOR: 触摸工具(比如手指接触触摸屏的面积)面积事件 */
+input_mt_sync(input_dev);
+input_sync(input_dev);
+
+float x;  float 经过运算后=0的机会很小
+if(x < -0.000001 && x > 0.000001)还是if(x > －0.000001 && x < 0.000001)
+x!=0   x==0
+
+
+
+ 以一个数组作为函数的参数时   在调用处 传入数组名，相当于传入数组的指针，子函数中改数组元素值会改变main函数中的
+
+
+struct inode一个是代表文件，struct file一个是代表打开的文件
+
+struct inode结构是用来在内核内部表示文件的.同一个文件可以被打开好多次,所以可以对应很多struct file,但是只对应一个struct inode.
+
+
+git 
+
+
+//git 生成补丁  
+mkdir /tmp/patch
+git format-patch -o /tmp/patch 05b45d8b4d2a0fb0fe041e8a515cd908cdcc80a8（这个版本以后的，不包含这个）
+
+//git 打补丁
+git am /tmp/patch/*.patch
+am是一个集成的工具
+
+git am tmp/0004-kernel-power.patch
+Applying: kernel:长按power键强制关机后不重启
+error: patch failed: kernel/drivers/power/axp/axp-cfg.h:190
+error: kernel/drivers/power/axp/axp-cfg.h: patch does not apply
+
+再执行
+git apply --reject tmp/0004-kernel-power.patch
+Checking patch kernel/drivers/power/axp/axp-cfg.h...
+Applied patch kernel/drivers/power/axp/axp-cfg.h cleanly.
+没出现reject文件 说明多了空格，什么的，实际代码是一样的
+
+因此只要手动 add 文件，再 git am --resolved 就ok了
+
+出现这个说明 am文件判断出文件不一样了
+
+
+
+git am --resolved  //这个代表你解决掉了冲突，继续往下打补丁
+
+git apply --reject /tmp/patch/0001-kernel-add-CARTA-HD-LCD-1072x1448.patch  
+
+git am abord
+build.prop  644 权限
+
+当原文被改的情况下，patch可能不成功，因为需要找到原文，再替换
+
+makefile 里面编译进内核 内核程序的运行顺序 跟编译的顺序有关
+#define pure_initcall(fn)  __define_initcall("0",fn,1)
+#define core_initcall(fn)  __define_initcall("1",fn,1)
+#define core_initcall_sync(fn)  __define_initcall("1s",fn,1s)
+#define postcore_initcall(fn)  __define_initcall("2",fn,2)
+#define postcore_initcall_sync(fn) __define_initcall("2s",fn,2s)
+#define arch_initcall(fn)  __define_initcall("3",fn,3)
+#define arch_initcall_sync(fn)  __define_initcall("3s",fn,3s)
+#define subsys_initcall(fn)  __define_initcall("4",fn,4)
+#define subsys_initcall_sync(fn) __define_initcall("4s",fn,4s)
+#define fs_initcall(fn)   __define_initcall("5",fn,5)
+#define fs_initcall_sync(fn)  __define_initcall("5s",fn,5s)
+#define rootfs_initcall(fn)  __define_initcall("rootfs",fn,rootfs)
+#define device_initcall(fn)  __define_initcall("6",fn,6)
+#define device_initcall_sync(fn) __define_initcall("6s",fn,6s)
+#define late_initcall(fn)  __define_initcall("7",fn,7)
+#define late_initcall_sync(fn)  __define_initcall("7s",fn,7s)
+#define module_init(x) __initcall(x);
+#define __initcall(fn) device_initcall(fn)
+
+数字越小优先级越高，有些i2c驱动用的是late_initcall，改成别的会变成no ask
+
+导致不稳定的原因 有可能  时间（复位时间延迟） 顺序（驱动文件加载顺序）  电压（不标准）
+
+
+
+全志
+
+cd lichee
+./build.sh -p sun8iw3p1(忘记是什么了)
+
+进入android目录：cd android
+. build/envetup.sh(把包里面的方案全找到)
+lunch(选平台)
+extract-bsp：把内核模块内核文件等copy进android文件包里
+make -j8(j4 or j2) 或者make
+打包：pack
+
+
+git checkout 分支名   如果本地有分支，则切换到该分支，如果没有就把远端分支复制下来，并切换
+
+创建本地分支对应远端分支
+git checkout -b 新分支名 origin/分支名
+
+把本地分支push到服务器
+git push origin 分支名
+
+
+内核程序1使用 EXPORT_SYMBOL_GPL 导出符号时
+
+内核程序2用extern 引入时，内核程序1一定要参与编译，不然报错
+
+RTC
+RTC在kernel内的作用: linux系统有两个时钟：一个是由主板电池驱动的“Real Time Clock”也叫做RTC或者叫CMOS时钟，硬件时钟。当操作系统关机的时候，用这个来记录时间，但是对于运行的系统是不用这个时间的。
+另一个时间是 “System clock”也叫内核时钟或者软件时钟，是由软件根据时间中断来进行计数的，内核时钟在系统关机的情况下是不存在的，所以，当操作系统启动的时候，内核时钟是要读取RTC时间来进行时间同步。并且在系统关机的时候将系统时间写回RTC中进行同步。
+
+休眠唤醒 博客
+http://blog.csdn.net/g_salamander/article/details/7988340
+
+ adb push out/target/product/rk30sdk/system/framework/services.jar  /system/framework/services.jar
+
+
+捕鱼达人 死机  报内核空指针 oops  错误   提升了cpu 供电电压 1.2-->1.3  
+
+TP  单击变成  拖动   猜测  报点太多引起
+
+上层打印栈
+public static void printCallStatck() {
+               Throwable ex = new Throwable();
+               StackTraceElement[] stackElements = ex.getStackTrace();
+               if (stackElements != null) {
+                       for (int i = 0; i < stackElements.length; i++) {
+                               System.out.print(stackElements[i].getClassName()+"/t");
+                               System.out.print(stackElements[i].getFileName()+"/t");
+                               System.out.print(stackElements[i].getLineNumber()+"/t");
+                              System.out.println(stackElements[i].getMethodName());
+                               System.out.println("-----------------------------------");
+                       }
+               }
+       }
+
+
+得到包名
+public static final String ACTIVITY_SERVICE = "activity";
+private String getAppName(int pID)  
+{  
+   String processName = "";  
+   ActivityManager am = (ActivityManager)mContext.getSystemService(ACTIVITY_SERVICE);  
+   List l = am.getRunningAppProcesses();  
+   Iterator i = l.iterator();  
+   PackageManager pm = mContext.getPackageManager();  
+   while(i.hasNext())   
+   {  
+         ActivityManager.RunningAppProcessInfo info = (ActivityManager.RunningAppProcessInfo)(i.next());  
+         try   
+         {   
+             if(info.pid == pID)  
+             {  
+                 CharSequence c = pm.getApplicationLabel(pm.getApplicationInfo(info.processName, PackageManager.GET_META_DA
+                 //Log.d("Process", "Id: "+ info.pid +" ProcessName: "+ info.processName +"  Label: "+c.toString());  
+                 //processName = c.toString();  
+                 processName = info.processName;
+             }  
+         }  
+         catch(Exception e)   
+         {  
+               //Log.d("Process", "Error>> :"+ e.toString());  
+         }  
+  }  
+   return processName;  
+}
+
+
+相同的点  数值相同  连续上报无效
+
+
+undefined reference to `g_is_reboot'
+出现这个情况有一定跟 变量 声明定义有关   查查extern   还要确定相关的文件有确实参与了编译  menuconfig 有无配置
+
+
+make[2]: *** No rule to make target `drivers/char/tianc_lcd.o', needed by `drivers/char/built-in.o'. Stop
+出现类似的有可能是 Makefile里的文件名不对
+
+编内核模块的时候   
+ Building modules, stage 2.
+  MODPOST 0 modules
+有关的用到相同的依赖的模块去掉试试
+
+通常跟内核有无编译有关系，可以使用默认配置， 或者clean重新编译
+
+Kconfig的单选
+choice
+      bool "Cypress TrueTouch Gen4 MultiTouch Protocol"  //标题                                                                         
+      default TOUCHSCREEN_CYPRESS_CYTTSP4_MT_B
+  
+  config TOUCHSCREEN_CYPRESS_CYTTSP4_MT_A
+      bool "Protocol A"   //显示在标题后面的括号内
+      help
+      Select A
+  
+  config TOUCHSCREEN_CYPRESS_CYTTSP4_MT_B
+      bool "Protocol B"
+      help
+      Select B 
+  
+endchoice
+
+Kconfig的反向依赖  
+config MSG
+    bool "msg2238"
+    select CYTTSP4
+    help
+      "test"
+
+config CYTTSP4
+    bool "cyttsp4"
+    help
+      "test"
+
+
+老D博客  hosts
+
+
+i2c driver 和 client 的match  需要 i2c_driver.driver.name && i2c_driver.id_table 等于板文件的 type   
+
+
+
+axp的电源键
+
+axp_mfd.c
+	axp_mfd_probe()
+		INIT_WORK(&chip->irq_work, axp_mfd_irq_work)  初始化工作
+		client->irq = gpio_to_irq(client->irq);   获得中断io口
+		ret = request_irq(client->irq, axp_mfd_irq_handler,IRQF_DISABLED|IRQF_TRIGGER_FALLING, "axp_mfd", chip)
+		
+	axp_mfd_irq_handler()  中断服务子程序 isr
+		schedule_work(&chip->irq_work);
+
+	axp_mfd_irq_work()
+		blocking_notifier_call_chain  调用通知订阅方
+
+axp22_supply.c
+	axp_battery_probe()
+		set_bit(KEY_POWER, powerkeydev->keybit);
+		charger->nb.notifier_call = axp_battery_event;
+  		ret = axp_register_notifier(charger->master, &charger->nb, AXP22_NOTIFIER_ON);
+			enable_irqs(chip, irqs); 这里才把中断打开
+			blocking_notifier_chain_register() 订阅通知 
+
+	axp_battery_event(struct notifier_block *nb, unsigned long event, void *data)
+		if(event & AXP22_IRQ_POKSH) {axp_pressshort(charger);}
+			input_report_key(powerkeydev, KEY_POWER, 1); 上报电源按键事件
+	
+通知链
+notification chain适用于内核子系统之间的信息传递
+Notification chain使用发布-订阅模型（publish-and-subscribemodel）：在事件发生时，检测或产生事件的子系统作为主动一方通过通知函数来告知作为被动一方的订阅者（对此事件感兴趣的子系统）。这里有个额外要求，订阅一方要提供callback函数以供发布方调用，当然，提供什么样的callback函数完全由订阅方决定
+
+Blocking notifier chains
+可阻塞通知链：通知链元素的回调函数在进程上下文中运行，允许阻塞(axp驱动里是在中断服务子程序中，使用工作，工作里面调用通知链的回调函数)
+
+Atomic notifier chains
+原子通知链：通知链元素的回调函数（当事件发生时要执行的函数）只能在中断上下文中运行，不允许阻塞
+
+
+这样写 state可以得到1或0
+int state  
+state = !!button->adc_state;
+
+输入子系统的
+keycode 
+注意10进制和16进制
+
+AXP  power按键长按
+PEKOFFEN   强制关机功能使能
+PEKOFFRESTART   强制关机后是否要重启
+
+
+vim
+g/vivian/s//sky/g 替换每一行中所有 vivian 为 sky
+
+
+blocking_notifier_chain_register(&fb_notifier_list, nb);  这种方式注册的suspend resume函数里面打印不出来get_suspend_state
+
+TP  把休眠唤醒函数都注释掉了，短休眠依然 没有用，可以量中断脚波形，在 irq_disable  ,set_irq_wake 打印出来irq号，看是不是被屏蔽了
+
+
+使用early_suspend（）进行休眠的设备，它休眠的时刻早于其他设备，使用late_resume（）唤醒的设备，它被唤醒的时刻要晚于其他设备
+
+只要系统中其他地方还拥有wake_lock锁（类型WAKE_LOCK_SUSPEND），系统就没法进入休眠
+
+WAKE_LOCK_SUSPEND   驱动中一般只有这一种类型
+cat /proc/wakelocks
+
+git revert  abcd   去掉abcd这个提交
+
+
+init.rc 是打包在ramdisk.img分区的，ramdisk是打包root目录的东西，ramdisk塞进boot.img，看编译脚本ramdisk的具体去向
+
+权限 只要有x就可以好像
+通常init启动的程序把stdout stderr 定向到/dev/null
+logwrapper可以启动某个程序，stdout stderr重定向到log系统中，logcat可查看
+开机完成后的服务
+service init-setup /system/bin/logwrapper /system/bin/test.sh
+    user root
+    group root
+    disabled      不能通过启动一类服务来启动，只能单独以名字来启动
+    oneshot
+
+on property:sys.boot_completed=1    (on后面是触发条件)
+    start init-setup(必须是这个名字)
+
+普通服务
+service 随便一个名字 /system/bin/test.sh
+    class main   同个类的service似乎可以同时启动
+    user root
+    group root
+    oneshot      服务退出后不再重启
+
+
+
+touch /目录/文件
+
+
+不小心git commit的话，可以先导出补丁，再reset，再pull,再打补丁
+
+查看文件系统空间
+df -h 
+
+查看文件夹文件大小
+du -h --max-depth=1 目录
+
+ls -h
+
+
+分成了很多个git 仓库
+这里可以看到所有历史的xml  /opt/work/rkrepo/rk312x_android5.1/.repo/manifests/rk312x_android5.1_v2.00   跟最新的对比就可以知道哪些小仓库更新了   可以生成diff文件，
+到path 生成旧revision之后的patch  
+git format-patch --src-prefix="a/这是path/" --dst-prefix="b/这是path/" -o /tmp/patch/ 这是commit号
+之所以要在patch 中增加路径头部，是因为 生成补丁时是在原生版本的path里面，而打补丁是在我们的sdk的根目录
+
+完事后还要cp 一份manifest 到 我们的sdk下 ，覆盖掉release的那个
+
+diff -u rk312x_android5.1_rel_v2.03_20150807.xml rk312x_android5.1_rel_v2.06_2015.08.28.xml > ~/Desktop/xxx.diff
+
+git log  就是中间跳过的版本。。。。
+...skipping...
+
+
+git format-patch –n 07fe            // -n指patch数，07fe对应提交的名称, 某次提交（含）之前的几次提交
+
+
+截取字符串 
+${parameter%word} 最小限度从后面截取word
+${parameter%%word} 最大限度从后面截取word
+${parameter#word} 最小限度从前面截取word
+${parameter##word} 最大限度从前面截取word
+
+make menuconfig 出错 可能缺少 某些安装包
+
+
+{
+247服务器
+登陆帐户:  sibrary@192.168.0.247    三个3六个6九个9
+root帐户:   root                                  bo_yue_247
+git帐户:      git                                    bo_yue_git
+
+git项目所在的目录为/home/repo, 注意创建复制git项目时要用git帐户来操作
+
+通过sibrary@192.168.0.247登陆后，用su git切换到git帐户，再进到/home/repo里进行仓库操作
+
+247  git 增加成员 权限
+/home/repo/gitosis-admin.git$ vim gitosis.conf
+描述
+/home/repo/ebook/abook/rk3026-ebook-t63-arta.git$ vim description
+}
+
+删除远程分支(推空的分支)
+git push origin :snappet
+
+设置master对应远程仓库的master分支
+git branch --set-upstream origin/master master
+
+把分支推到远程分支 
+#git push origin test
+git push -u origin my_branch
+
+source xxx.sh  //no found xxx.sh   
+改成source ./xxx.sh
+
+
+更新recovery的kernel。执行下面命令即可：
+cp kernel/arch/arm/boot/zImage  out/target/product/rk3288/kernel
+makerecovery image
+
+
+repo forall -c git reset --hard HEAD
+
+adb 命令大全
+http://www.jianshu.com/p/860bc2bf1a6a
+
+
+Exception in thread "main" java.lang.UnsupportedClassVersionError: com/sun/javadoc/AnnotationTypeElementDoc : Unsupported major.minor version 51.0
+
+解决
+JDK_DIR="/opt/jdk/jdk1.6.0_45"
+ANDROID_JAVA_HOME=$JDK_DIR
+export ANDROID_JAVA_HOME
+
+
+烧了内核一点效果都没有打印也没有
+
+1.地址烧错了
+2.有boot.img  或者是跑在recovery.img
+3.改的程序没有参与编译，或者被注释
+4.改的程序没有跑
+
+
+sed -i '$a bye' file  //在文件file最后一行输入bye
+sed -i '/匹配字符串/d' file  //删除匹配行
+sed -i "s/匹配字符串/替换字符串/g" file //替换字符串
+
+linux shell ''读取变量要另外加''
+sed -i '$a string='$X'-'$Y'' file
+
+
+sed -i '/要匹配的字符串/i\\插入的内容' 文件   （往匹配的行前插入内容）
+
+sed -i 's/字符串（开头）.*//g' 文件   （将字符串开头的后面部分替换为null，相当与删除）   .是匹配单个字符  *是任意字符，  
+
+sed < > 不用转义
+
+字符串最好先放进变量，特别是有空格的字符串
+
+sed 's/^192.168.0.1/&localhost/' file -----&符号表示替换换字符串中被找到的部份!!(可以用来替换增加 例如 把speak 替换speaking) 所有以192.168.0.1开头的行都会被替换成它自已加 localhost，变成192.168.0.1localhost。
+
+' 和 "好像无所谓
+
+linux shell 读取每一行的内容
+
+#!/bin/bash
+
+while read line
+do
+echo $line
+done < file(待读取的文件)
+
+
+读取多个文件
+exec 7<file1
+exec 8<file2
+然后我们可以通过read命令来读取对应文件的内容：
+
+read data <&7 #使用符合是为了区分7是文件描述符，而不是文件名
+read data <&8
+
+关闭文件
+exec 7</dev/null
+exec 8</dev/null
+
+
+
+
+
+readfiles() {
+	local FD1=7
+	local FD2=8
+	local file1=$1
+	local file2=$2
+	local count1=0
+	local count2=0
+	local eof1=0
+	local eof2=0
+	local data1
+	local data2
+ 
+	# Open files.
+	exec 7<$file1
+	exec 8<$file2
+	while [[ $eof1 -eq 0  ||  $eof2 -eq 0 ]]
+	do
+		if read data1<&$FD1; then
+			let count1++
+			printf "%s, line %d: %s\n" $file1 $count1 "$data1"
+		else
+			eof1=1
+		fi
+		if read data2 <&$FD2; then
+			let count2++
+			printf "%s, line %d: %s\n" $file2 $count2 "$data2"
+		else
+			eof2=1
+		fi
+	done
+	exec 7</dev/null
+	exec 8</dev/null
+}
+#read file1 and file2
+readfiles file1 file2
+
+
+
+
+
+
+java打印文件名+行号
+//文件名+行号
+Log.d(TAG, "["+Thread.currentThread().getStackTrace()[2].getFileName()+","+Thread.currentThread().getStackTrace()[2].getLineNumber()+"]");
+
+
+ubuntu 安装rpm
+$sudo apt-get install alien ##alien默认没有安装，所以首先要安装它
+$sudo alien xxxx.rpm  ##将rpm转换为deb,完成后会生成一个xxxx.deb
+$sudo dpkg -i xxxx.deb ##这样xxxx软件就可以安装完成了
+
+用0填充misc.img的前 4m空间，只一次
+dd if=/dev/zero of=misc.img bs=4M  count=1
+
+make bootimage recoveryimage
+build/core  里面的mk文件
+
+搜索包
+aptitude
+
+ubuntu发送小气泡
+notify-send
+
+
+休眠相关的  休眠设置唤醒有用的irq，屏蔽的irq
+kernel/kernel/power/里面的文件
+
+ubuntu改密码
+passwd 用户
+不行就
+root@ubunto:~# mount -no remount,rw /
+root@ubunto:~# mount -a
+
+
+
+遇到概率性跑飞，系统容易崩溃，时好时坏的问题
+可能是ddr频率，cpu,gpu,ddr供电电压问题
+
+
+merge 的commit 会显示哪两个 commit 的merge
+git revert -m 1 似乎是merge的commit号(1就是第一个commit, 2是第二个commit)
+
+
+调试otg 鼠标案例
+
+出现热拔插时好时坏，接otg开机则一定无问题
+
+对比正常跟非正常的log
+发现正常时，otg调用一个resume后，识别到设备
+
+不正常则是调用resume再调用suspend后，就没有然后了（跟进去看后发现suspend 应该是关闭控制器，resume则是开机控制器）
+
+最后在一个wakeup时会调用的函数里面发现里可能通过判断会调用suspend或resume，把suspend屏蔽，竟然ok了
+
+
+关于休眠唤醒
+echo mem > /sys/power/state
+echo on > /sys/power/state
+
+
+[   91.229539] request_suspend_state: (on -> mem) at (2015-10-29 08:35:58.086304510 UTC)
+[   91.229710] GTP suspend------------------- system state : 0x3   挂起TP
+[   91.298891] [AXP22]======early suspend=======
+[   91.868401] Freezing user space processes ... (elapsed 0.01 seconds) done. 冻结用户进程
+[   91.891726] Freezing remaining freezable tasks ... (elapsed 0.19 seconds) done.
+[   92.091692] Suspending console(s) (use no_console_suspend to debug)      挂起串口
+012345676543210
+[   92.102626] DWC_OTG: usb20_host suspend, HPRT0:0x1005       挂起otg
+[   92.107717] DWC_OTG: dwc_otg_hcd_suspend, usb device mode
+[   92.107891] [AXP22]axp22_suspend, entor...    挂起axp
+[   92.109421] pmu_suspend_chgcur = 1050000    
+[   92.155930] rknand_buffer_suspend done!!      挂起nand
+[   92.157226] PM: suspend of devices complete after 58.830 msecs    应该是挂起CPU
+[   92.157534] PM: late suspend of devices complete after 0.287 msecs
+[   92.157548] Disabling non-boot CPUs ...
+[   92.158112] CPU1: shutdown
+[   92.160416] wakeup irq: 00000000 00000020 9c000000
+[   92.160430] wakeup gpio1: 00000004
+[   92.160495] Suspended for 0.000 seconds
+
+
+
+vim 选词 在所在词上打 gd
+
+0行首 $行尾
+
+vim 主题
+git clone git://github.com/altercation/vim-colors-solarized.git  
+cp vim-colors-solarized/colors/solarized.vim /usr/shared/vim/vim73/colors	   
+配置.vimrc
+syntax on  
+set t_Co=256  
+let g:solarized_termcolors=256  
+set background=dark  
+colorscheme solarized 
+
+
+
+
+
+一个驱动里面可以同时有module_init 和 late_initcall  按顺序调用
+
+
+
+ADB很强大，记住一些ADB命令有助于提高工作效率。
+
+获取序列号：
+adb get-serialno
+重启到bootloader，即刷机模式：
+adb reboot bootloader
+重启到recovery，即恢复模式：
+adb reboot recovery
+获取机器MAC地址：
+adb shell  cat /sys/class/net/wlan0/address
+获取CPU序列号：
+adb shell cat /proc/cpuinfo
+安装APK：
+adb install <apkfile> //比如：adb install baidu.apk
+保留数据和缓存文件，重新安装apk：
+adb install -r <apkfile> //比如：adb install -r baidu.apk
+安装apk到sd卡：
+adb install -s <apkfile> // 比如：adb install -s baidu.apk
+卸载APK：
+adb uninstall <package> //比如：adb uninstall com.baidu.search
+卸载app但保留数据和缓存文件：
+adb uninstall -k <package> //比如：adb uninstall -k com.baidu.search
+启动应用：
+adb shell am start -n <package_name>/.<activity_class_name> 
+查看设备cpu和内存占用情况：
+adb shell top
+查看占用内存前6的app：
+adb shell top -m 6
+刷新一次内存信息，然后返回：
+adb shell top -n 1
+查询各进程内存使用情况：
+adb shell procrank
+杀死一个进程：
+adb shell kill [pid] 
+查看进程列表：
+adb shell ps
+查看指定进程状态：
+adb shell ps -x [PID] 
+查看后台services信息：
+adb shell service list 
+查看当前内存占用：
+adb shell cat /proc/meminfo
+查看IO内存分区：
+adb shell cat /proc/iomem
+查看wifi密码：
+adb shell cat /data/misc/wifi/*.conf 
+清除log缓存：
+adb logcat -c
+查看bug报告：
+adb bugreport
+获取设备名称：
+adb shell cat /system/build.prop
+跑monkey：
+adb shell monkey -v -p your.package.name 500 
+
+
+
+
+
+现在，你回退到了某个版本，关掉了电脑，第二天早上就后悔了，想恢复到新版本怎么办？找不到新版本的commit id怎么办？
+
+在Git中，总是有后悔药可以吃的。当你用$ git reset --hard HEAD^回退到add distributed版本时，再想恢复到append GPL，就必须找到append GPL的commit id。Git提供了一个命令git reflog用来记录你的每一次命令
+
+
+
+1) 统计当前文件夹下文件的个数
+
+ls -l |grep "^-"|wc -l
+2) 统计当前文件夹下目录的个数
+
+ls -l |grep "^d"|wc -l
