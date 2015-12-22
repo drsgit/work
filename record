@@ -923,6 +923,12 @@ passwd 用户
 root@ubunto:~# mount -no remount,rw /
 root@ubunto:~# mount -a
 
+ubuntu忘记密码
+进recovery mode
+选root
+改密码(Authentication token manipulation error)
+mount -no remount,rw/
+mount -a
 
 
 遇到概率性跑飞，系统容易崩溃，时好时坏的问题
