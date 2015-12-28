@@ -1063,6 +1063,7 @@ adb shell monkey -v -p your.package.name 500
 
 在Git中，总是有后悔药可以吃的。当你用$ git reset --hard HEAD^回退到add distributed版本时，再想恢复到append GPL，就必须找到append GPL的commit id。Git提供了一个命令git reflog用来记录你的每一次命令
 
+gitignore !跟不忽略的内容
 
 
 1) 统计当前文件夹下文件的个数
