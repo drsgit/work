@@ -594,6 +594,24 @@ choice
   
 endchoice
 
+choice
+     bool "gsl tp type choose"
+     default GSL3675_2
+     config GSL3675_1
+         depends on TOUCHSCREEN_GSL3675
+         bool "gsl3675_1"
+     
+     config GSL3675_2
+         depends on TOUCHSCREEN_GSL3675
+         bool "gsl3675_2"
+endchoice
+
+
+Makefile：2：*** missing separator. Stop
+
+在Makefile文件中，命令必须以【tab】键开始。不能用空格，vim里会变色才行
+
+
 Kconfig的反向依赖  
 config MSG
     bool "msg2238"
@@ -901,6 +919,9 @@ $sudo apt-get install alien ##alien默认没有安装，所以首先要安装它
 $sudo alien xxxx.rpm  ##将rpm转换为deb,完成后会生成一个xxxx.deb
 $sudo dpkg -i xxxx.deb ##这样xxxx软件就可以安装完成了
 
+dpgk -l so*
+apt-get purge
+
 用0填充misc.img的前 4m空间，只一次
 dd if=/dev/zero of=misc.img bs=4M  count=1
 
@@ -977,6 +998,22 @@ echo on > /sys/power/state
 [   92.160495] Suspended for 0.000 seconds
 
 
+kernel/kernel/power/main.c   
+	state_store()
+		request_suspend_state()
+
+kernel/kernel/power/suspend.c
+	suspend_prepare()
+		pm_prepare_console()
+		suspend_freeze_processes()
+			freeze_processes()
+				try_to_freeze_tasks()
+	suspend_devices_and_enter()
+		suspend_console();
+		suspend_enter()
+			dpm_suspend_noirq()
+			disable_nonboot_cpus()
+			arch_suspend_disable_irqs()
 
 vim 选词 在所在词上打 gd
 
@@ -1065,6 +1102,8 @@ adb shell monkey -v -p your.package.name 500
 
 gitignore !跟不忽略的内容
 
+判断文件是否被ignore  简单的方法是直接改那个文件，再git status一下，最好做一下备份
+
 
 1) 统计当前文件夹下文件的个数
 
@@ -1072,3 +1111,53 @@ ls -l |grep "^-"|wc -l
 2) 统计当前文件夹下目录的个数
 
 ls -l |grep "^d"|wc -l
+
+
+git gc 清理垃圾，变快
+
+
+uu用法
+built-in.o 改名为 cyttsp4.o
+uuencode cyttsp4.o cyttsp4.o > cyttsp4.uu
+
+
+bcompare  可以设置filters  过滤掉不要的文件
+
+有时怎么装都缺东西，干脆相关的全部装上
+apt-get install libncurses*
+
+
+
+goodix 
+短休眠 触摸唤醒后 变成输入双击事件，一些宏没打开影响到 #define GTP_ICS_SLOT_REPORT  这个宏是 关于输入事件 协议的
+
+on->idle
+on->mem
+
+
+奇葩案例1:底层板文件改了一个感应按键的短按值为KEY_HOMEPAGE长按值为KEY_F6(原本是KEY_BACK和KEY_HOMEPAGE),结果一短按就出现卡死重启，原因：在按键驱动里的timer初始化对长按值=KEY_HOMEPAGE有效，不=homepage时，使用timer出现空指针，看串口日志能看到timer的地方空指针
+
+
+getevent -l  可以看出事件名
+
+
+grep 查找
+sed 编辑
+awk 把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理
+awk '{pattern + action}' {filenames}
+pattern 要查找的内容/正则表达式
+action  查找后要执行的命令
+
+-F指定域分隔符  默认是空格
+awk工作流程是这样的：读入有'\n'换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域。默认域分隔符是"空白键" 或 "[tab]键"
+
+统计/etc/passwd:文件名，每行的行号，每行的列数，对应的完整行内容:
+awk  -F ':'  '{printf("filename:%10s,linenumber:%s,columns:%s,linecontent:%s\n",FILENAME,NR,NF,$0)}' /etc/passwd
+filename:/etc/passwd,linenumber:1,columns:7,linecontent:root:x:0:0:root:/root:/bin/bash
+
+cat /etc/passwd |awk  -F ':'  'BEGIN {print "name,shell"}  {print $1","$7} END {print "blue,/bin/nosh"}'
+awk工作流程是这样的：先执行BEGING，然后读取文件，读入有/n换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域,随后开始执行模式所对应的动作action。接着开始读入第二条记录······直到所有的记录都读完，最后执行END操作
+
+awk内置变量
+FILENAME           awk浏览的文件名
+等等。。

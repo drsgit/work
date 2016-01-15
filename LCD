@@ -35,3 +35,17 @@ epd_panel->rotate = 270;
 （1）touch bootable/recovery/minui/graphics.c  
 （2） make out/target/product/rk30sdk/recovery.img  
 （3）./mkimage.sh
+
+
+Ubuntu下ADB的配置
+Ubuntu 12.04 源中没有adb工具，按如下方式添加:
+
+sudo add-apt-repository ppa:nilarimogard/webupd8
+sudo apt-get update
+sudo apt-get install android-tools-adb android-tools-fastboot
+配置文件，附件文件解压到对应目录:
+/etc/udev/rules.d/51-android.rules
+/home/xxx/.android/adb_usb.ini
+
+
+

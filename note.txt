@@ -152,6 +152,11 @@ $(obj)/gsl_point_id.o: $(obj)/gsl_point_id   这个是库
 	cp $(obj)/gsl_point_id $(obj)/gsl_point_id.o
 gslx680_hn-objs := gslx680.o gsl_point_id.o   链接到第一行  有objs后缀  gslx680.c 是源文件
 
+$(obj)/gsl_point_id.o:$(obj)/gsl_point_id
+    cp $(obj)/gsl_point_id $(obj)/gsl_point_id.o
+obj-$(CONFIG_TOUCHSCREEN_GSL3675)   += gsl_point_id.o gsl3675.o
+
+
 函数无参数最好加上void  避免警告warning: function declaration isn’t a prototype [-Wstrict-prototypes]
 
 
