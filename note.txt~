@@ -152,6 +152,11 @@ $(obj)/gsl_point_id.o: $(obj)/gsl_point_id   这个是库
 	cp $(obj)/gsl_point_id $(obj)/gsl_point_id.o
 gslx680_hn-objs := gslx680.o gsl_point_id.o   链接到第一行  有objs后缀  gslx680.c 是源文件
 
+$(obj)/gsl_point_id.o:$(obj)/gsl_point_id
+    cp $(obj)/gsl_point_id $(obj)/gsl_point_id.o
+obj-$(CONFIG_TOUCHSCREEN_GSL3675)   += gsl_point_id.o gsl3675.o
+
+
 函数无参数最好加上void  避免警告warning: function declaration isn’t a prototype [-Wstrict-prototypes]
 
 
@@ -1074,3 +1079,10 @@ http://blog.csdn.net/ruanjianruanjianruan/article/details/38523973
  e 级（发射极）和 b 极（基极）NPN  b>e  0.7V
 
 在相应位置1时，P-MOS导，通N-MOS截止，输出电压为VDD；在相应位置0时，N-MOS导通，P-MOS截止，输出电压为VSS，这就是所谓的推挽。
+
+
+
+pmu 光给spi flash 提供1.8v 电源可能还不够，还要在主控的控制器 配置1.8v  还是 3.3v  否则可能导致 spi工作不稳定
+
+
+主板不要只是接  PC USB 不稳定，容易出错   内核短错误  系统错误。。。。
