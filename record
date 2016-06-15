@@ -1022,7 +1022,7 @@ echo on > /sys/power/state
 [   92.160495] Suspended for 0.000 seconds
 
 
-kernel/kernel/power/main.c   
+kernel/kernel/power/main.c
 	state_store()
 		request_suspend_state()
 
@@ -1478,3 +1478,28 @@ bootloader 将 "boot-recovery" 写入BCB
 erase_root() 擦除CACHE分区
 清除 BCB
 main() 调用 reboot() 重启系统
+
+
+
+regulator_disable  失败
+regulator-always-on;
+
+
+
+ldo
+最小供电 = 最大供电
+不会| 上这个宏  REGULATOR_CHANGE_VOLTAGE
+
+模拟电压和数字电压：
+1）随时间连续变化的电压量，就是模拟电压，反应的是一个过程量，电压是连续的，如0-5V之间，是几伏就是几伏；
+2）不随时间连续变化的电压量，就是数字电压，反应的是一个状态逻辑量，电压是离散的，如0-5V之间，认为0-0.7V之间均为低电平0，2.5-5V之间均为高电平1，0.7V-2.5V之间为不定状态，既不是0也不是1。
+
+电容：阻低频
+电感：阻高频
+
+
+kernel/kernel/power/irqwake.c
+可以设置 浅休眠时哪些中断可以唤醒
+
+enable_irq_wakeup
+

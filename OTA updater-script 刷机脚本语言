@@ -1,0 +1,426 @@
+updater-script命令详解教你写刷机脚本
+ ROM相关	 半夏月  2年前 (2013-07-30)  1646℃  0评论
+updater-script命令详解，刷机脚本怎么写，这些问题都也算是安卓的入门知识了，今天就和大家讲解一下，讲解人是深度论坛的Seeyou，如果你想学习更多ROM制作安卓开发方面的知识，欢迎加入深度DRT团队，我们从初级到高级给大家系统的讲解。
+命令：mount
+用法：mount(fs_type, partition_type, location, mount_point)
+参数讲解：
+fs_type—————–“yaffs2″ 或 “ext4″
+partition_type———-“MTD” 或 “EMMC”
+location—————–分区(partition) 或 驱动器(device)
+mount_poin————挂载文件系统的目标文件夹(target folder to mount FS)
+作用解释: 挂载一个文件系统到指定的挂载点
+返 回 值: 挂载成功则返回挂载点，失败返回null
+函数示例: mount(“MTD”, “system”, “/system”);挂载system分区，设置返回指针”/system”
+mount(“vfat”, “/dev/block/mmcblk1p2″, “/system”); 挂载/dev/block/mmcblk1p2，返回指针”/system”
+
+命令: format
+用法: format(fs_type, partition_type, location)
+参数详解:
+fs_type—————–字符串，数据为”yaffs2″ 或 “ext4″
+partition_type———-字符串, “MTD” 或 “EMMC”
+location—————–字符串, 分区(partition) 或 驱动器(device)
+作用解释: 格式化为指定的文件系统
+函数示例: format(“MTD”, “system”);格式化system分区
+
+命令: delete
+用法: delete(file1, file2, …, fileN)
+参数详解: 字符串，要删除的文件
+作用解释: 删除一个文件。最少指定一个文件；多个文件可以做为多个参数指定
+函数示例: delete(“/data/zipalign.log”);删除文件/data/zipalign.log
+
+命令: delete_recursive
+用法: delete_recursive(dir1, dir2,…,dirN)
+参数详解: 字符串，要递归删除的目录
+作用解释: 删除文件夹及其包含的所有内容。最少指定1个目录；多个目录可以做为多个参数指定
+函数示例: delete_recursive(“/data/dalvik-cache”);删除文件夹/data/dalvik-cache
+
+命令: show_progress
+用法: show_progress(frac, sec)
+参数详解:
+frac———————-进度完成数值
+Sec———————-总秒数
+作用解释: 显示在Recovery系统中进度
+函数示例: show_progress(0.1, 10);show_progress下面的操作可能进行10s，完成后进度条前进0.1(也就是10%)
+
+命令: set_progress
+用法: set_prograss(frac)
+参数详解: frac———————进度数值
+函数示例:
+
+命令: package_extract_dir
+用法: package_extract_dir(package_path, destination_path)
+参数详解:
+package_path———-字符串，升级包内要提取的目录
+destination_path——–字符串，提取文件的目标目录
+作用解释: 提取升级包内目录中的所有文件到指定的目标目录
+函数示例: package_extract_dir(“system”, “/system”);释放ROM包里system文件夹下所有文件和子文件夹至/system
+
+命令: package_extract_file
+用法: package_extract_file(package_path) 或 package_extract_file(package_path, destination_path)
+参数详解:
+package_path———-字符串，升级包内要提取的文件
+destination_path——-字符串，提取文件的目标目录
+作用解释: 提取升级包内的单个文件到指定的目标目录
+函数示例: package_extract_file(“my.zip”, “/system”);解压ROM包里的my.zip文件至/system
+
+命令: file_getprop
+用法: file_getprop(file, key)
+参数详解:
+file———————-字符串，要检查的文件名
+Key———————-字符串，返回数据中的文件的键名字
+作用解释: 在格式”key”=”value”的文件中取得文件属性值
+函数示例:
+
+命令: symlink
+用法: symlink(target, src1, src2, …, srcN)
+参数详解:
+target——————-字符串，符号链接的目标
+srcX        ———————字符串，要创建的符号链接的目标点
+作用解释: 在创建新的符号链接之前，要断开已经存在的符号链接
+函数示例: symlink(“toolbox”, “/system/bin/ps”);建立指向toolbox的符号链接/system/bin/ps
+
+命令: set_perm
+用法: set_perm(uid, gid, mode, file1, file2, …, fileN)
+参数详解:
+uid———————-用户ID(user id)
+Gid———————-用户组ID(group id)
+Mode——————–权限模式(permission mode)
+fileX———————要设置许可的文件(file to set permission on)
+作用解释: 设置单个文件或一系列文件的权限，最少指定1个文件，前4个参数是必须的
+函数示例: set_perm(0,2000,0550, “system/etc/init.goldfish.sh”)；设置手机system中的etc/init.goldfish.sh的用户为root，用户组为shell，所有者以及所属用户组成员可以进行读取和执行操作，其他用户无操作权限）
+这里0代表用户为root
+2000代表用户组为shell
+我们来说明0550这组数据，这组数据的最后三位550，分别代表“所有者\组用户\其他用户”的权限，也就是我们在RE管理中“用户\群组\其他”三行。 我们以XXX来表示这三组权限，其中：
+×=4 读的权限
+×=2 写的权限
+×=1 执行的权限
+我们必须首先了解用数字表示的属性的含义：0表示没有权限，1表示可执行权限，2表示可写权限，4表示可读权限，然后将其相加。所以数字属性的格式应为3个从0到7的八进制数。
+例如，如果想让某个文件的属主有”读/写”二种权限，需要把4(可读)+2(可写)＝6(读/写)。若要rwx属性则4+2+1=7；若要rw-属性则4+2=6；若要r-x属性则4+1=5。
+常用修改权限的命令：
+Set_perm 0 0 0600 ××× (只有所有者有读和写的权限)
+Set_perm 0 0 0644 ××× (所有者有读和写的权限，组用户只有读的权限)
+Set_perm 0 0 0700 ××× (只有所有者有读和写以及执行的权限)
+Set_perm 0 0 0666 ××× (每个人都有读和写的权限)
+Set_perm 0 0 0777 ××× (每个人都有读和写以及执行的权限)
+
+命令: set_perm_recursive
+用法: set_perm_recursive(uid, gid, dirmode, filemode, dir1, dir2, …dirN)
+参数详解:
+uid———————-用户ID(user id)
+Gid———————-用户组ID(group id)
+Dirmode—————-指定目录内的目录的权限
+Filemode—————指定目录内的文件的权限
+dirX———————要设置权限的目标
+作用解释: 设置单个目录或一系列目录的里面的所有文件的权限，最少指定1个目录，5个参数都是必须的
+函数示例: set_perm_recursive 0 0 0755 0644 SYSTEM:app；设置手机system/app文件夹及其中文件的用户为root，用户组为root，app文件夹权限为所有者可以进行读、写、执行操作，其他用户可以进行读取和执行操作，其中的文件的权限为所有者可以进行读写操作，其他用户可以进行读取操作
+
+命令: getprop
+用法: getprop(key)
+参数详解: key———————字符串，想要系统返回的属性
+作用解释: 这个函数是用来返指定的属性的值。它是用来从build.props文件中查询手机的信息的。
+函数示例:
+
+命令: write_raw_image
+用法: write_raw_image(file, partition)
+参数详解:
+file———————-字符串，要读取的Img源文件
+Partition—————–字符串，要写入Img文件的目标分区
+作用解释: 这个函数是用来写Img文件到分区
+函数示例: write_raw_image(“/tmp/boot.img”, “boot”)将yaffs2格式的boot包直接写入boot分区
+
+命令: apply_patch
+用法: apply_patch(srcfile, tgtfile, tgtsha1, tgtsize, sha1_1, patch_1, …, sha1_x, patch1_x)
+参数详解:
+srcfile——————-字符串，要打补丁的源文件(要读入的文件)
+Tgtfile——————-字符串，补丁文件要写入的目标文件
+tgtsha1—————–字符串，写入补丁文件的目标文件的sha1哈希值
+sha1_x——————字符串，要写入目标文件的补丁数据的sha1哈希值 patch1_x—————-字符串，实际上应用到目标文件的补丁
+作用解释: 这个函数是用来打补丁到文件。
+函数示例:
+
+命令: apply_patch_check
+用法: apply_patch_check(file, sha1_1, …, sha1_x)
+参数详解:
+file———————-字符串，要检查的文件
+sha1_x——————要检查的哈希值
+作用解释: 检查文件是否已经被打补丁，或者能不能被打补丁。需要检查“applypatch_check ”函数调用的源代码。
+
+命令: apply_patch_space
+用法: apply_patch_space(bytes)
+参数详解: bytes——————-检查的字节的数字
+作用解释: 检查缓存来确定是否有足够的空间来写入补丁文件并返回一些数据。
+函数示例:
+
+命令: read_file
+用法: read_file(filename)
+参数详解: filename—————-字符串，要读取内容的文件名
+作用解释: 这个函数返回文件的内容
+函数示例:
+
+命令: sha1_check
+用法: sha1_check(data) 或 sha1_check(data, sha1_hex, …, sha1_hexN)
+参数详解:
+data———————要计算sha1哈希值的文件的内容-必须是只读文件格式
+sha1_hexN————–文件数据要匹配的特定的十六进制sha1_hex哈希值字符串
+作用解释: 如果只指定data参数，这个函数返回data参数的十六进制sha1_hex哈希值字符串。其他参数用来确认你检查的文件是不是列表中的哈希值的一个。 它返回匹配的哈希值，或者在没有匹配任何哈希值时返回空。
+函数示例:
+
+命令: ui_print
+用法: ui_print(msg1, …, msgN)
+参数详解: msg———————-字符串，要处理过程中输出给用户的信息
+作用解释: 在脚本运行的时候，在控制台显示的信息。最少要指定1个参数，你可以指定额外的msg参数，并且它们会连接起来输了
+函数示例: ui_print(“It’s ready!”);屏幕打印It’s ready!
+
+命令: run_program
+用法: run_program(prog, arg1, .., argN)
+参数详解:
+prog——————–字符串，要执行的程序
+argN——————–字符串，要执行的程序的运行参数
+作用解释: 以指定的参执行程序
+函数示例: run_program(“/system/xbin/installbusybox.sh”);运行installbusybox.sh脚本文件
+
+命令: ifelse
+用法: ifelse(condition, truecondition, falsecondition)
+参数详解:
+condition—————-要运算的表达式
+Truecondition———–当值为True时执行的 Edify脚本块
+Falsecodnition———–当值为False时执行的 Edify脚本块
+作用解释: 这是If-then结构的 Edify脚本语言。在真条件或非条件下语句可以是单条Edify命令或者脚本块。脚本块可以用圆括号来界定，用分号来隔开。
+函数示例:
+
+命令: abort
+用法: abort()
+参数详解: 没有参数
+作用解释: 中止脚本执行
+函数示例:
+
+命令: assert
+用法: assert(condition)
+参数详解: condition—————boolean
+作用解释: 如果condition参数的计算结果为False，则停止脚本执行，否则继续执行脚本
+函数示例:assert(package_extract_file(“boot.img”,”/tmp/boot.img”),write_raw_image(“/tmp/boot.img”,”boot”),delete(“/tmp/boot.img”))
+执行package_extract_file，如果不返回错误则执行write_raw_image，如果write_raw_image不出错则执行delete
+
+【深度Drt教材】 之 Android刷机脚本updater-script实例讲解
+
+在这里引用的是c8812的深度os刷机脚本
+
+assert(getprop(“ro.product.device”) == “c8812″ || getprop(“ro.build.product”) == “c8812″ ||
+getprop(“ro.product.device”) == “C8812″ || getprop(“ro.build.product”) == “C8812″ ||
+getprop(“ro.product.device”) == “hwc8812″ || getprop(“ro.build.product”) == “hwc8812″ ||
+getprop(“ro.product.device”) == “msm7627a” || getprop(“ro.build.product”) == “msm7627a”);
+
+#这个是对于build.prop机型名称进行校验，校验设备是否为c8812或者c8812的一些别名，
+校验成功的话继续刷机操作，失败的话终止刷机，只要是起到一个保护的作用，一面刷错机器
+
+mount(“ext4″, “EMMC”, “/dev/block/mmcblk0p12″, “/system”);                       
+
+#这个是挂载system分区，方便后面进行读写，用到的参数在命令讲解中都有说，这里需要注意的就是分区不能写错了，
+挂载出错的话就会导致刷写到错误的分区上，如果是无关紧要的分区可能只是溢出，要是把引导分区刷了，就变砖了
+
+package_extract_file(“system/bin/backuptool.sh”, “/tmp/backuptool.sh”);              
+package_extract_file(“system/bin/backuptool.functions”, “/tmp/backuptool.functions”);
+
+#这个是复制文件到另一个位置，可以重新命名
+
+set_perm(0, 0, 0777, “/tmp/backuptool.sh”);
+set_perm(0, 0, 0644, “/tmp/backuptool.functions”);
+
+#文件的权限设定，如果文件没有权限的话将不能够执行
+
+run_program(“/tmp/backuptool.sh”, “backup”);
+
+#运行指定的这个backuptool.sh  shell文件，进行backup操作，这个一般用不到，都是一些有特殊的要求的第三方
+在做rom的时候，写一些需要实现某些功能的脚本文件，刷机的时候自动运行，
+
+unmount(“/system”);
+
+#卸载system分区
+
+show_progress(0.500000, 0);
+
+#这个是刷机进度条的设定
+
+format(“ext4″, “EMMC”, “/dev/block/mmcblk0p12″, “0”, “/system”);
+
+#格式化system分区，注意这里是需要5个参数，有的recovery对参数又要求，可能导致刷机终止
+
+mount(“ext4″, “EMMC”, “/dev/block/mmcblk0p13″, “/data”);
+
+#挂载data分区，方便后面进行读写操作
+
+package_extract_dir(“data”, “/data”);
+
+#将rom包中的data文件夹刷写到手机的data分区中
+
+mount(“ext4″, “EMMC”, “/dev/block/mmcblk0p12″, “/system”);
+
+#挂载系统分区，方便后面进行读写操作
+
+package_extract_dir(“system”, “/system”);
+
+#将rom包中的sys文件夹刷写到system分区中
+
+symlink(“Roboto-Bold.ttf”, “/system/fonts/DroidSans-Bold.ttf”);
+symlink(“Roboto-Regular.ttf”, “/system/fonts/DroidSans.ttf”);
+symlink(“busybox”, “/system/xbin/[“, “/system/xbin/[[“,
+        “/system/xbin/adjtimex”, “/system/xbin/arp”, “/system/xbin/ash”,
+        “/system/xbin/awk”, “/system/xbin/base64″, “/system/xbin/basename”,
+        “/system/xbin/bbconfig”, “/system/xbin/blkid”, “/system/xbin/blockdev”,
+        “/system/xbin/brctl”, “/system/xbin/bunzip2″, “/system/xbin/bzcat”,
+        “/system/xbin/bzip2″, “/system/xbin/cal”, “/system/xbin/cat”,
+        “/system/xbin/catv”, “/system/xbin/chattr”, “/system/xbin/chgrp”,
+        “/system/xbin/chmod”, “/system/xbin/chown”, “/system/xbin/chroot”,
+        “/system/xbin/clear”, “/system/xbin/cmp”, “/system/xbin/comm”,
+        “/system/xbin/cp”, “/system/xbin/cpio”, “/system/xbin/crond”,
+        “/system/xbin/crontab”, “/system/xbin/cut”, “/system/xbin/date”,
+        “/system/xbin/dc”, “/system/xbin/dd”, “/system/xbin/depmod”,
+        “/system/xbin/devmem”, “/system/xbin/df”, “/system/xbin/diff”,
+        “/system/xbin/dirname”, “/system/xbin/dmesg”, “/system/xbin/dnsd”,
+        “/system/xbin/dos2unix”, “/system/xbin/du”, “/system/xbin/echo”,
+        “/system/xbin/ed”, “/system/xbin/egrep”, “/system/xbin/env”,
+        “/system/xbin/expand”, “/system/xbin/expr”, “/system/xbin/false”,
+        “/system/xbin/fdisk”, “/system/xbin/fgrep”, “/system/xbin/find”,
+        “/system/xbin/flash_lock”, “/system/xbin/flash_unlock”,
+        “/system/xbin/flashcp”, “/system/xbin/flock”, “/system/xbin/fold”,
+        “/system/xbin/free”, “/system/xbin/freeramdisk”, “/system/xbin/fsync”,
+        “/system/xbin/ftpget”, “/system/xbin/ftpput”, “/system/xbin/fuser”,
+        “/system/xbin/getopt”, “/system/xbin/grep”, “/system/xbin/groups”,
+        “/system/xbin/gunzip”, “/system/xbin/gzip”, “/system/xbin/halt”,
+        “/system/xbin/head”, “/system/xbin/hexdump”, “/system/xbin/id”,
+        “/system/xbin/ifconfig”, “/system/xbin/inetd”, “/system/xbin/insmod”,
+        “/system/xbin/install”, “/system/xbin/iostat”, “/system/xbin/ip”,
+        “/system/xbin/kill”, “/system/xbin/killall”, “/system/xbin/killall5″,
+        “/system/xbin/length”, “/system/xbin/less”, “/system/xbin/ln”,
+        “/system/xbin/losetup”, “/system/xbin/ls”, “/system/xbin/lsattr”,
+        “/system/xbin/lsmod”, “/system/xbin/lsusb”, “/system/xbin/lzcat”,
+        “/system/xbin/lzma”, “/system/xbin/lzop”, “/system/xbin/lzopcat”,
+        “/system/xbin/man”, “/system/xbin/md5sum”, “/system/xbin/mesg”,
+        “/system/xbin/mkdir”, “/system/xbin/mke2fs”, “/system/xbin/mkfifo”,
+        “/system/xbin/mkfs.ext2″, “/system/xbin/mkfs.vfat”,
+        “/system/xbin/mknod”, “/system/xbin/mkswap”, “/system/xbin/mktemp”,
+        “/system/xbin/modinfo”, “/system/xbin/modprobe”, “/system/xbin/more”,
+        “/system/xbin/mount”, “/system/xbin/mountpoint”, “/system/xbin/mpstat”,
+        “/system/xbin/mv”, “/system/xbin/nanddump”, “/system/xbin/nandwrite”,
+        “/system/xbin/netstat”, “/system/xbin/nice”, “/system/xbin/nohup”,
+        “/system/xbin/nslookup”, “/system/xbin/ntpd”, “/system/xbin/od”,
+        “/system/xbin/patch”, “/system/xbin/pgrep”, “/system/xbin/pidof”,
+        “/system/xbin/ping”, “/system/xbin/pkill”, “/system/xbin/pmap”,
+        “/system/xbin/poweroff”, “/system/xbin/printenv”, “/system/xbin/printf”,
+        “/system/xbin/ps”, “/system/xbin/pstree”, “/system/xbin/pwd”,
+        “/system/xbin/pwdx”, “/system/xbin/rdev”, “/system/xbin/readlink”,
+        “/system/xbin/realpath”, “/system/xbin/renice”, “/system/xbin/reset”,
+        “/system/xbin/resize”, “/system/xbin/rev”, “/system/xbin/rm”,
+        “/system/xbin/rmdir”, “/system/xbin/rmmod”, “/system/xbin/route”,
+        “/system/xbin/run-parts”, “/system/xbin/rx”, “/system/xbin/sed”,
+        “/system/xbin/seq”, “/system/xbin/setconsole”, “/system/xbin/setserial”,
+        “/system/xbin/setsid”, “/system/xbin/sh”, “/system/xbin/sha1sum”,
+        “/system/xbin/sha256sum”, “/system/xbin/sha512sum”,
+        “/system/xbin/sleep”, “/system/xbin/sort”, “/system/xbin/split”,
+        “/system/xbin/stat”, “/system/xbin/strings”, “/system/xbin/stty”,
+        “/system/xbin/sum”, “/system/xbin/swapoff”, “/system/xbin/swapon”,
+        “/system/xbin/sync”, “/system/xbin/sysctl”, “/system/xbin/tac”,
+        “/system/xbin/tail”, “/system/xbin/tar”, “/system/xbin/taskset”,
+        “/system/xbin/tee”, “/system/xbin/telnet”, “/system/xbin/telnetd”,
+        “/system/xbin/test”, “/system/xbin/tftp”, “/system/xbin/tftpd”,
+        “/system/xbin/time”, “/system/xbin/timeout”, “/system/xbin/top”,
+        “/system/xbin/touch”, “/system/xbin/tr”, “/system/xbin/traceroute”,
+        “/system/xbin/true”, “/system/xbin/ttysize”, “/system/xbin/tune2fs”,
+        “/system/xbin/umount”, “/system/xbin/uname”, “/system/xbin/uncompress”,
+        “/system/xbin/unexpand”, “/system/xbin/uniq”, “/system/xbin/unix2dos”,
+        “/system/xbin/unlzma”, “/system/xbin/unlzop”, “/system/xbin/unxz”,
+        “/system/xbin/unzip”, “/system/xbin/uptime”, “/system/xbin/usleep”,
+        “/system/xbin/uudecode”, “/system/xbin/uuencode”, “/system/xbin/vi”,
+        “/system/xbin/watch”, “/system/xbin/wc”, “/system/xbin/wget”,
+        “/system/xbin/which”, “/system/xbin/whoami”, “/system/xbin/xargs”,
+        “/system/xbin/xz”, “/system/xbin/xzcat”, “/system/xbin/yes”,
+        “/system/xbin/zcat”);
+symlink(“mksh”, “/system/bin/sh”);
+symlink(“toolbox”, “/system/bin/cat”, “/system/bin/chmod”,
+        “/system/bin/chown”, “/system/bin/cmp”, “/system/bin/date”,
+        “/system/bin/dd”, “/system/bin/df”, “/system/bin/dmesg”,
+        “/system/bin/getevent”, “/system/bin/getprop”, “/system/bin/hd”,
+        “/system/bin/id”, “/system/bin/ifconfig”, “/system/bin/iftop”,
+        “/system/bin/insmod”, “/system/bin/ioctl”, “/system/bin/ionice”,
+        “/system/bin/kill”, “/system/bin/ln”, “/system/bin/log”,
+        “/system/bin/ls”, “/system/bin/lsmod”, “/system/bin/lsof”,
+        “/system/bin/md5″, “/system/bin/mkdir”, “/system/bin/mount”,
+        “/system/bin/mv”, “/system/bin/nandread”, “/system/bin/netstat”,
+        “/system/bin/newfs_msdos”, “/system/bin/notify”, “/system/bin/printenv”,
+        “/system/bin/ps”, “/system/bin/r”, “/system/bin/reboot”,
+        “/system/bin/renice”, “/system/bin/rm”, “/system/bin/rmdir”,
+        “/system/bin/rmmod”, “/system/bin/route”, “/system/bin/schedtop”,
+        “/system/bin/sendevent”, “/system/bin/setconsole”,
+        “/system/bin/setprop”, “/system/bin/sleep”, “/system/bin/smd”,
+        “/system/bin/start”, “/system/bin/stop”, “/system/bin/sync”,
+        “/system/bin/top”, “/system/bin/touch”, “/system/bin/umount”,
+        “/system/bin/uptime”, “/system/bin/vmstat”, “/system/bin/watchprops”,
+        “/system/bin/wipe”);
+
+#以上是创建toolbox和busybox工具集的符号链接操作，toolbox和busybox都是工具集，
+我们在使用的时候都是终端输入  $busybox ls  这样才能使用里面包含的ls工具
+创建符号链接的意思就是，将工具集里面的小工具都引用出来，我们可以直接在终端输入工具的名字，然后符号链接会自动找到工具集中的小工具运行
+这样方便了工具集的使用
+
+set_perm_recursive(0, 0, 0755, 0644, “/system”);
+set_perm_recursive(0, 0, 0755, 0755, “/system/addon.d”);
+set_perm_recursive(0, 2000, 0755, 0755, “/system/bin”);
+set_perm(0, 3003, 02750, “/system/bin/netcfg”);
+set_perm(0, 3004, 02755, “/system/bin/ping”);
+set_perm(0, 2000, 06750, “/system/bin/run-as”);
+set_perm_recursive(1002, 1002, 0755, 0440, “/system/etc/bluetooth”);
+set_perm(0, 0, 0755, “/system/etc/bluetooth”);
+set_perm(0, 0, 0644, “/system/etc/bluetooth/BCM4330.hcd”);
+set_perm(1000, 1000, 0640, “/system/etc/bluetooth/auto_pairing.conf”);
+set_perm(3002, 3002, 0444, “/system/etc/bluetooth/blacklist.conf”);
+set_perm(0, 0, 0644, “/system/etc/bluetooth/init.bcm.bt.sh”);
+set_perm(1002, 1002, 0440, “/system/etc/dbus.conf”);
+set_perm(1014, 2000, 0550, “/system/etc/dhcpcd/dhcpcd-run-hooks”);
+set_perm_recursive(0, 2000, 0755, 0755, “/system/etc/init.d”);
+set_perm(0, 0, 0755, “/system/etc/init.d”);
+set_perm(0, 2000, 0550, “/system/etc/init.goldfish.sh”);
+set_perm_recursive(0, 0, 0755, 0555, “/system/etc/ppp”);
+set_perm_recursive(0, 2000, 0755, 0644, “/system/vendor”);
+set_perm(0, 0, 0644, “/system/vendor/etc/audio_effects.conf”);
+set_perm_recursive(0, 2000, 0755, 0755, “/system/xbin”);
+set_perm(0, 0, 06755, “/system/xbin/librank”);
+set_perm(0, 0, 06755, “/system/xbin/procmem”);
+set_perm(0, 0, 06755, “/system/xbin/procrank”);
+set_perm(0, 0, 06755, “/system/xbin/su”);
+
+#这里是进行权限的设定，最后一条需要大家注意一下，这个是和root权限有着密切联系的，su文件就是获取root权限的，如果他的权限设置的不对的话可能就会导致root不成功，还有一个需要大家注意的地方就是，你赋予权限的文件一定要存在，否则可能导致刷机失败
+
+show_progress(0.200000, 0);
+show_progress(0.200000, 10);
+package_extract_file(“system/bin/backuptool.sh”, “/tmp/backuptool.sh”);
+package_extract_file(“system/bin/backuptool.functions”, “/tmp/backuptool.functions”);
+set_perm(0, 0, 0777, “/tmp/backuptool.sh”);
+set_perm(0, 0, 0644, “/tmp/backuptool.functions”);
+run_program(“/tmp/backuptool.sh”, “restore”);
+
+#这些之前讲过了
+
+delete(“/system/bin/backuptool.sh”);
+delete(“/system/bin/backuptool.functions”);
+
+#这个是删除指定的文件
+
+package_extract_file(“system/bin/modelid_cfg.sh”, “/tmp/modelid_cfg.sh”);
+set_perm(0, 0, 0777, “/tmp/modelid_cfg.sh”);
+run_program(“/tmp/modelid_cfg.sh”, “”);
+show_progress(0.200000, 10);
+
+#这些之前都讲过了
+
+package_extract_file(“boot.img”, “/dev/block/mmcblk0p15″);
+
+#这里是刷写内核boot.img的，主要需要注意的还是分区这里
+
+show_progress(0.100000, 0);
+unmount(“/data”);
+unmount(“/system”);
+
+#最后卸载data和system分区，用完之后就要卸载，这个习惯大家要养成，尤其是在linux下
+如果不卸载的话，可能会因为一时的疏忽导致数据的损坏和丢失。
+
+转载请注明：半夏月 » updater-script命令详解教你写刷机脚本
